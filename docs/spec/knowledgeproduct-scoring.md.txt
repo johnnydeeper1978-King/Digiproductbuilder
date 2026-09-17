@@ -1,0 +1,701 @@
+knowledge/product-scoring.md
+
+# 369 Degrees Product Opportunity Scoring Framework
+
+## PURPOSE
+
+The Product Opportunity Scoring Framework helps the 369 Degrees Discovery Guide evaluate potential digital product opportunities.
+
+The goal is NOT to predict guaranteed success.
+
+The goal is to compare opportunities based on:
+
+User fit.
+
+Problem clarity.
+
+Audience clarity.
+
+Product simplicity.
+
+Creation difficulty.
+
+Marketing potential.
+
+Business model suitability.
+
+Time requirements.
+
+---
+
+# IMPORTANT RULE
+
+A high score does NOT guarantee sales.
+
+A low score does NOT mean an opportunity cannot work.
+
+The score is a decision-support system.
+
+Use the score to compare opportunities.
+
+Do not present scores as scientific certainty.
+
+---
+
+# TOTAL SCORE
+
+Each opportunity receives a score out of:
+
+100
+
+---
+
+# CATEGORY 1: USER FIT
+
+Maximum:
+
+15 points
+
+Ask:
+
+Does the opportunity align with:
+
+- User skills?
+- User experience?
+- User interests?
+- Problems they understand?
+- Problems they have solved?
+
+Scoring:
+
+0–5
+
+Weak connection.
+
+6–10
+
+Moderate connection.
+
+11–15
+
+Strong connection.
+
+---
+
+# CATEGORY 2: PROBLEM CLARITY
+
+Maximum:
+
+15 points
+
+Ask:
+
+Is there a clear problem?
+
+Can the problem be described?
+
+Does the audience recognise the problem?
+
+Does the product solve something specific?
+
+Scoring:
+
+0–5
+
+Problem unclear.
+
+6–10
+
+Problem somewhat clear.
+
+11–15
+
+Clear and specific problem.
+
+---
+
+# CATEGORY 3: AUDIENCE CLARITY
+
+Maximum:
+
+10 points
+
+Ask:
+
+Can we clearly identify:
+
+Who needs this?
+
+What situation they are in?
+
+What they want?
+
+Where they can potentially be reached?
+
+Scoring:
+
+0–3
+
+Audience vague.
+
+4–7
+
+Audience moderately clear.
+
+8–10
+
+Specific audience.
+
+---
+
+# CATEGORY 4: PRODUCT SPECIFICITY
+
+Maximum:
+
+10 points
+
+Ask:
+
+Is the product specific?
+
+Or is it generic?
+
+Generic:
+
+Fitness Ebook.
+
+Specific:
+
+Home Workout Guide for Busy New Mothers.
+
+Highly specific:
+
+15-Minute Home Workout System for New Mothers With Less Than 30 Minutes Per Day.
+
+Scoring:
+
+0–3
+
+Generic.
+
+4–7
+
+Moderately specific.
+
+8–10
+
+Specific problem and audience.
+
+---
+
+# CATEGORY 5: CREATION SIMPLICITY
+
+Maximum:
+
+10 points
+
+Ask:
+
+Can the user create the first version?
+
+Can the product be simplified?
+
+Does the user need expensive tools?
+
+Does it require months of production?
+
+Scoring:
+
+0–3
+
+Complex.
+
+4–7
+
+Moderate.
+
+8–10
+
+Simple MVP.
+
+---
+
+# CATEGORY 6: TIME FIT
+
+Maximum:
+
+10 points
+
+Ask:
+
+Does the opportunity fit the user's available time?
+
+Example:
+
+User:
+
+Less than 5 hours.
+
+Better:
+
+Checklist.
+
+Template.
+
+Toolkit.
+
+Harder:
+
+Massive course.
+
+Scoring:
+
+0–3
+
+Poor fit.
+
+4–7
+
+Moderate fit.
+
+8–10
+
+Strong fit.
+
+---
+
+# CATEGORY 7: MARKETING POTENTIAL
+
+Maximum:
+
+10 points
+
+Ask:
+
+Can this product create:
+
+Useful content?
+
+Educational content?
+
+Short videos?
+
+Problem-based content?
+
+Personal stories?
+
+Faceless content?
+
+UGC?
+
+Searchable content?
+
+Scoring:
+
+0–3
+
+Difficult to market.
+
+4–7
+
+Moderate.
+
+8–10
+
+Strong content potential.
+
+---
+
+# CATEGORY 8: BUSINESS STYLE FIT
+
+Maximum:
+
+5 points
+
+Ask:
+
+Does this opportunity fit:
+
+Personal Brand?
+
+Faceless?
+
+Hybrid?
+
+The user's preferred style?
+
+Scoring:
+
+0–1
+
+Poor fit.
+
+2–3
+
+Moderate.
+
+4–5
+
+Strong fit.
+
+---
+
+# CATEGORY 9: FIRST PRODUCT POTENTIAL
+
+Maximum:
+
+10 points
+
+Ask:
+
+Is this a good FIRST product?
+
+Can it:
+
+Be created quickly?
+
+Be explained simply?
+
+Be priced clearly?
+
+Be tested?
+
+Be improved?
+
+Scoring:
+
+0–3
+
+Poor first product.
+
+4–7
+
+Moderate.
+
+8–10
+
+Strong first product.
+
+---
+
+# CATEGORY 10: EXPANSION POTENTIAL
+
+Maximum:
+
+5 points
+
+Ask:
+
+Can the product eventually expand into:
+
+Additional products?
+
+Templates?
+
+Premium versions?
+
+Bundles?
+
+Courses?
+
+Memberships?
+
+Services?
+
+Automation?
+
+Scoring:
+
+0–1
+
+Limited.
+
+2–3
+
+Moderate.
+
+4–5
+
+Strong.
+
+---
+
+# SCORE INTERPRETATION
+
+## 85–100
+
+Strong Opportunity
+
+Good fit.
+
+Clear problem.
+
+Clear audience.
+
+Good first product potential.
+
+Still validate.
+
+---
+
+## 70–84
+
+Promising Opportunity
+
+Worth exploring.
+
+May require refinement.
+
+---
+
+## 55–69
+
+Potential Opportunity
+
+Needs better:
+
+Audience.
+
+Problem.
+
+Positioning.
+
+Product format.
+
+---
+
+## Below 55
+
+Weak First Opportunity
+
+Not necessarily a bad market.
+
+But may not currently be the best fit.
+
+Explore alternatives.
+
+---
+
+# SCORING EXAMPLE
+
+Product:
+
+ADHD Study Planning Toolkit for University Students
+
+User:
+
+Student.
+
+Personally struggles with organisation.
+
+Interested in productivity.
+
+Prefers faceless.
+
+Has limited time.
+
+---
+
+User Fit:
+
+14/15
+
+Problem Clarity:
+
+14/15
+
+Audience:
+
+9/10
+
+Product Specificity:
+
+9/10
+
+Creation Simplicity:
+
+9/10
+
+Time Fit:
+
+9/10
+
+Marketing Potential:
+
+9/10
+
+Business Style:
+
+5/5
+
+First Product:
+
+9/10
+
+Expansion:
+
+5/5
+
+---
+
+TOTAL:
+
+91/100
+
+---
+
+# IMPORTANT
+
+The AI should explain the score.
+
+Example:
+
+"Strong user fit because you've personally experienced this problem and understand the audience."
+
+Do not simply show:
+
+91/100
+
+Without explanation.
+
+---
+
+# PRODUCT COMPARISON
+
+When comparing opportunities, use:
+
+| Category | Product A | Product B | Product C |
+|---|---|---|---|
+| User Fit | | | |
+| Problem | | | |
+| Audience | | | |
+| Simplicity | | | |
+| Time Fit | | | |
+| Marketing | | | |
+| First Product | | | |
+
+Then recommend:
+
+Best Overall Opportunity.
+
+Easiest Opportunity.
+
+Highest Expansion Potential.
+
+Most Underrated Opportunity.
+
+---
+
+# OPPORTUNITY TYPES
+
+The AI should attempt to identify different types.
+
+## STRONG FIT
+
+Matches the user's profile.
+
+## EASY START
+
+Fast to create.
+
+## HIGH EXPANSION
+
+Could become a bigger business.
+
+## UNDERRATED
+
+Less obvious.
+
+## UNEXPECTED
+
+Something the user probably did not consider.
+
+---
+
+# RED FLAG CHECK
+
+Reduce confidence if:
+
+The product is too broad.
+
+The audience is unclear.
+
+The problem is unclear.
+
+The user has no interest.
+
+The product requires too much time.
+
+The user needs expensive resources.
+
+The product is difficult to explain.
+
+The marketing path is unclear.
+
+---
+
+# MVP PRINCIPLE
+
+Always ask:
+
+"What is the smallest useful version?"
+
+Example:
+
+Instead of:
+
+Complete Fitness Course.
+
+Start with:
+
+30-Day Beginner Gym Tracker.
+
+Instead of:
+
+Complete Parenting Program.
+
+Start with:
+
+New Parent Night Routine Checklist.
+
+Instead of:
+
+Social Media Course.
+
+Start with:
+
+30-Day Instagram Hook Library for Fitness Coaches.
+
+Smaller products are easier to:
+
+Create.
+
+Launch.
+
+Test.
+
+Improve.
+
+Sell.
+
+---
+
+# FINAL SCORING RULE
+
+The AI must NOT automatically recommend the highest score.
+
+Also consider:
+
+User excitement.
+
+Personal preference.
+
+Available time.
+
+Long-term goals.
+
+The user must have final control.
+
+The AI provides recommendations.
+
+The user makes the decision.
