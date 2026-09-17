@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://369degrees.co.za/schemas/user-profile.schema.json",
+  "title": "User Profile",
+  "description": "Structured user profile produced by 369 Degrees Free Discovery.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "skills": {
+      "type": "array",
+      "description": "Things the user can credibly do.",
+      "items": { "type": "string" }
+    },
+    "experience": {
+      "type": "array",
+      "description": "Relevant experience the user brings.",
+      "items": { "type": "string" }
+    },
+    "interests": {
+      "type": "array",
+      "description": "Topics the user is likely to sustain.",
+      "items": { "type": "string" }
+    },
+    "goals": {
+      "type": "array",
+      "description": "What the user wants to achieve.",
+      "items": { "type": "string" }
+    },
+    "availableTime": {
+      "type": "object",
+      "description": "How much time the user can realistically commit.",
+      "additionalProperties": false,
+      "properties": {
+        "hoursPerWeek": { "type": "number", "minimum": 0 },
+        "commitment": {
+          "type": "string",
+          "enum": ["minimal", "part-time", "full-time", "flexible"]
+        },
+        "description": { "type": "string" }
+      }
+    },
+    "businessPreference": {
+      "type": "object",
+      "description": "Preferences that shape which opportunities fit the user.",
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "type": "string",
+          "description": "Preferred business model, if stated."
+        },
+        "complexity": {
+          "type": "string",
+          "enum": ["simple", "moderate", "complex"]
+        },
+        "pricePreference": {
+          "type": "string",
+          "enum": ["low", "mid", "premium", "no-preference"]
+        },
+        "audiencePreference": { "type": "string" },
+        "deliveryPreference": { "type": "string" }
+      }
+    },
+    "brandPreference": {
+      "type": "string",
+      "description": "Personal brand vs faceless business preference.",
+      "enum": ["personal-brand", "faceless", "either", "undecided"]
+    },
+    "discoveryPathway": {
+      "type": "array",
+      "description": "Primary discovery pathway(s). Multiple may be valid; do not force a single one.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "expertise-driven",
+          "interest-driven",
+          "problem-driven",
+          "existing-product-driven"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "potentialNiches": {
+      "type": "array",
+      "description": "Candidate niches surfaced during Discovery.",
+      "items": { "type": "string" }
+    },
+    "customerProblems": {
+      "type": "array",
+      "description": "Problems connected to the user's capabilities and interests.",
+      "items": { "type": "string" }
+    }
+  }
+}

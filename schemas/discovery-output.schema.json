@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://369degrees.co.za/schemas/discovery-output.schema.json",
+  "title": "Discovery Output",
+  "description": "The complete result of a 369 Degrees Discovery session, connecting the user profile, opportunities, selected opportunity and blueprint.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "sessionId": {
+      "type": "string",
+      "description": "Identifier of the Discovery session this output belongs to."
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "description": "Progress of the Discovery session through its stages.",
+      "enum": [
+        "in-progress",
+        "opportunities-generated",
+        "opportunity-selected",
+        "blueprint-generated",
+        "complete"
+      ]
+    },
+    "userProfile": {
+      "$ref": "https://369degrees.co.za/schemas/user-profile.schema.json"
+    },
+    "productOpportunities": {
+      "type": "array",
+      "description": "Recommended opportunities (typically the top three).",
+      "items": {
+        "$ref": "https://369degrees.co.za/schemas/opportunity.schema.json"
+      }
+    },
+    "unexpectedOpportunities": {
+      "type": "array",
+      "description": "Adjacent / spinoff opportunities (typically 2-3).",
+      "items": {
+        "$ref": "https://369degrees.co.za/schemas/opportunity.schema.json"
+      }
+    },
+    "selectedOpportunity": {
+      "description": "The opportunity the user selected, where applicable.",
+      "$ref": "https://369degrees.co.za/schemas/opportunity.schema.json"
+    },
+    "blueprint": {
+      "$ref": "https://369degrees.co.za/schemas/blueprint.schema.json"
+    }
+  },
+  "required": ["userProfile"]
+}

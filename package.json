@@ -1,0 +1,38 @@
+{
+  "name": "369-degrees",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "369 Degrees \u2014 discover, create, launch and sell digital products. Application foundation.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview",
+    "test:schema": "node tests/schema.test.mjs",
+    "test:routes": "node tests/routes.test.mjs",
+    "test:logic": "node tests/logic.test.mjs",
+    "test:node": "npm run test:schema && npm run test:routes && npm run test:logic",
+    "test:db": "python3 tests/db/foundation.py && python3 tests/db/discovery.py && python3 tests/db/blueprint_paywall.py && python3 tests/db/builder.py",
+    "secret-scan": "bash scripts/secret-scan.sh",
+    "verify": "tsc --noEmit && npm run build && npm run test:node && npm run secret-scan",
+    "db:push": "supabase db push",
+    "functions:deploy": "supabase functions deploy discovery discovery-analyze blueprint-generate builder stripe-checkout stripe-webhook",
+    "deploy": "bash scripts/deploy.sh"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.2",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.8",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^2.1.1"
+  }
+}

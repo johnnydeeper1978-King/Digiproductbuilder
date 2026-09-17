@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://369degrees.co.za/schemas/blueprint.schema.json",
+  "title": "Digital Product Blueprint",
+  "description": "Final output of Free Discovery; the starting context for the $47 Builder.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "product": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "concept": { "type": "string" },
+        "format": {
+          "$ref": "https://369degrees.co.za/schemas/opportunity.schema.json#/$defs/productFormat"
+        },
+        "corePromise": { "type": "string" }
+      },
+      "required": ["name", "concept"]
+    },
+    "buyer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "targetCustomer": { "type": "string" },
+        "customerProfile": { "type": "string" },
+        "problem": { "type": "string" },
+        "desiredOutcome": { "type": "string" }
+      },
+      "required": ["targetCustomer", "problem", "desiredOutcome"]
+    },
+    "positioning": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mainPositioning": { "type": "string" },
+        "differentiation": { "type": "string" },
+        "keyPromise": { "type": "string" },
+        "whyThisProduct": { "type": "string" }
+      }
+    },
+    "content": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "modules": {
+          "type": "array",
+          "description": "Main modules / sections of the product.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": { "type": "string" },
+              "description": { "type": "string" }
+            },
+            "required": ["title"]
+          }
+        },
+        "deliverables": { "type": "array", "items": { "type": "string" } },
+        "resources": { "type": "array", "items": { "type": "string" } },
+        "assets": {
+          "type": "array",
+          "description": "Templates / assets where relevant.",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "pricing": {
+      "type": "object",
+      "description": "Pricing hypothesis with reasoning. Never presented as guaranteed.",
+      "additionalProperties": false,
+      "properties": {
+        "suggestedPrice": { "type": "number", "minimum": 0 },
+        "currency": {
+          "type": "string",
+          "description": "ISO 4217 currency code, e.g. ZAR, USD."
+        },
+        "priceHypothesis": { "type": "string" },
+        "reasoning": { "type": "string" }
+      },
+      "required": ["reasoning"]
+    },
+    "marketing": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contentAngles": { "type": "array", "items": { "type": "string" } },
+        "hooks": { "type": "array", "items": { "type": "string" } },
+        "platforms": { "type": "array", "items": { "type": "string" } },
+        "leadMagnets": { "type": "array", "items": { "type": "string" } },
+        "conversionPath": { "type": "string" }
+      }
+    },
+    "launch": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sequence": {
+          "type": "array",
+          "description": "Suggested launch sequence.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "step": { "type": "string" },
+              "description": { "type": "string" }
+            },
+            "required": ["step"]
+          }
+        }
+      }
+    },
+    "nextStep": {
+      "type": "string",
+      "description": "Handoff note for the Builder so the user does not repeat Discovery."
+    }
+  },
+  "required": ["product", "buyer"]
+}
