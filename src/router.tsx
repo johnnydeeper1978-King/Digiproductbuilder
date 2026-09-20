@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { MarketingLayout } from "@/components/layout/MarketingLayout";
 
 import { HomePage } from "@/pages/public/HomePage";
 import { HowItWorksPage } from "@/pages/public/HowItWorksPage";
@@ -29,10 +30,14 @@ import { NotFoundPage } from "@/pages/NotFoundPage";
 export function AppRouter() {
   return (
     <Routes>
-      {/* Public */}
-      <Route element={<PublicLayout />}>
+      {/* Marketing website (premium light theme) */}
+      <Route element={<MarketingLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/how-it-works" element={<HowItWorksPage />} />
+      </Route>
+
+      {/* Public app experiences (dark) */}
+      <Route element={<PublicLayout />}>
         <Route path="/discover" element={<DiscoverPage />} />
         <Route path="/discover/results" element={<DiscoverResultsPage />} />
         <Route path="/blueprint" element={<BlueprintPage />} />

@@ -1,42 +1,82 @@
+import { Link } from "react-router-dom";
 import { Seo } from "@/components/seo/Seo";
-import { Container } from "@/components/ui/Container";
-import { Card } from "@/components/ui/Card";
-import { ButtonLink } from "@/components/ui/Button";
 
-const steps = [
-  { t: "Free Discovery", d: "A guided flow learns your skills, interests, time and goals, then generates product opportunities scored for fit — including unexpected ones." },
-  { t: "Your Blueprint", d: "Pick an opportunity and get a Digital Product Blueprint: buyer, problem, positioning, content outline, pricing hypothesis and a launch direction." },
-  { t: "The $47 Builder", d: "The Builder uses your blueprint as its starting point and guides you through creating, positioning, pricing and launching the product." },
-  { t: "Launch & sell", d: "Landing page, payment setup, content and a launch sequence — always with a clear next action." },
-  { t: "Automate", d: "As you grow, an AI workforce can take on research, content, marketing and support." },
+const STEPS: [string, string, string, string][] = [
+  ["01", "Discover", "FREE", "Answer guided questions about your interests, skills, experience, ideas and market opportunities. No product idea required."],
+  ["02", "Blueprint", "YOUR DIRECTION", "Receive a structured Digital Product Blueprint: potential products, best audience, the core problem, product format and a pricing direction."],
+  ["03", "Build", "$47 ONE-TIME", "Move through a step-by-step Builder that turns your blueprint into a real product — offer, product creation, brand, landing page and launch."],
+  ["04", "Launch", "EXECUTE", "Prepare your checkout, delivery and launch sequence, then take the product to market with a clear set of first actions."],
+  ["05", "Sell", "GROW", "Plan the content, hooks, scripts and marketing that get attention, create demand and drive your first sales."],
+  ["06", "Scale", "GROW", "Add products, refine your offers and grow what's working — up to 3 product businesses on your account."],
+  ["07", "Automate", "PREMIUM · SOON", "Move toward a future AI Workforce where an AI CEO coordinates specialist AI employees around your business."],
 ];
 
 export function HowItWorksPage() {
   return (
-    <Container>
-      <Seo title="How it works" description="From free Discovery to a blueprint to a guided $47 build — here's the full 369 Degrees journey." />
-      <div className="page-head" style={{ paddingTop: "var(--space-12)" }}>
-        <span className="eyebrow">How it works</span>
-        <h1>From "no idea" to a product you can sell</h1>
-        <p className="muted" style={{ maxWidth: 620 }}>Five stages. Each one ends knowing exactly what to do next.</p>
-      </div>
-      <div className="stack">
-        {steps.map((s, i) => (
-          <Card key={s.t}>
-            <div className="row" style={{ alignItems: "flex-start" }}>
-              <span className="step-num">{i + 1}</span>
-              <div>
-                <h3 style={{ marginBottom: 6 }}>{s.t}</h3>
-                <p className="muted" style={{ margin: 0 }}>{s.d}</p>
+    <>
+      <Seo title="How 369 Degrees works" description="Your journey from “I don't know what to sell” to a launched digital product — Discover, Blueprint, Build, Launch, Sell, Scale, Automate." />
+
+      {/* Header */}
+      <section className="hero" style={{ paddingBottom: 60 }}>
+        <div className="container" style={{ maxWidth: 820 }}>
+          <div className="eyebrow">HOW IT WORKS</div>
+          <h1 style={{ maxWidth: 820 }}>From “I don't know what to sell” <em>to a product you can launch.</em></h1>
+          <p className="lead">One clear path, one step at a time. Start free, get a blueprint, then build the business around it.</p>
+          <div className="hero-ctas">
+            <Link className="btn primary" to="/discover">Start Free Discovery →</Link>
+            <Link className="btn outline" to="/builder">See the Builder</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Flow overview */}
+      <section className="solution" style={{ paddingTop: 70 }}>
+        <div className="container">
+          <div className="flow">
+            <div className="flow-step"><div className="n">01</div><strong>DISCOVER</strong></div><div className="arrow">→</div>
+            <div className="flow-step"><div className="n">02</div><strong>CREATE</strong></div><div className="arrow">→</div>
+            <div className="flow-step"><div className="n">03</div><strong>BUILD</strong></div><div className="arrow">→</div>
+            <div className="flow-step"><div className="n">04</div><strong>LAUNCH</strong></div>
+          </div>
+          <div className="flow" style={{ marginTop: 10, gridTemplateColumns: "repeat(5,1fr)", maxWidth: 710, marginLeft: "auto", marginRight: "auto" }}>
+            <div className="flow-step"><div className="n">05</div><strong>SELL</strong></div><div className="arrow">→</div>
+            <div className="flow-step"><div className="n">06</div><strong>SCALE</strong></div><div className="arrow">→</div>
+            <div className="flow-step"><div className="n">07</div><strong>AUTOMATE</strong></div>
+          </div>
+        </div>
+      </section>
+
+      {/* Step detail */}
+      <section className="workflow">
+        <div className="container">
+          <div className="section-head">
+            <div className="eyebrow">THE STEPS</div>
+            <h2>What happens at each stage.</h2>
+          </div>
+          <div style={{ maxWidth: 860, margin: "0 auto", display: "grid", gap: 14 }}>
+            {STEPS.map(([num, title, tag, body]) => (
+              <div key={num} className="journey-card" style={{ minHeight: 0, display: "grid", gridTemplateColumns: "70px 1fr", gap: 18, alignItems: "start" }}>
+                <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: "-.05em", color: "var(--blue)" }}>{num}</div>
+                <div>
+                  <div className="tag">{tag}</div>
+                  <h3 style={{ margin: "6px 0 8px" }}>{title}</h3>
+                  <p style={{ margin: 0 }}>{body}</p>
+                </div>
               </div>
-            </div>
-          </Card>
-        ))}
-      </div>
-      <div className="row" style={{ marginTop: "var(--space-8)" }}>
-        <ButtonLink to="/discover">Start free Discovery</ButtonLink>
-        <ButtonLink to="/builder" variant="secondary">Skip to the Builder</ButtonLink>
-      </div>
-    </Container>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="final">
+        <div className="container">
+          <div className="eyebrow">START HERE</div>
+          <h2>It starts with discovering the right direction.</h2>
+          <p>Find out what you could sell, who it could help and where to start — before you build anything.</p>
+          <Link className="btn primary" to="/discover">Discover What You Could Sell — Free →</Link>
+        </div>
+      </section>
+    </>
   );
 }
