@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://369degrees.ai/schemas/user-profile.schema.json",
+  "title": "369 Degrees Discovery User Profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "goals",
+    "time_available",
+    "business_style",
+    "interests",
+    "skills",
+    "experience",
+    "constraints"
+  ],
+  "properties": {
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "income_direction": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "current_situation": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "time_available": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "budget": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "experience": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "interests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "problems_solved": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "people_ask_for_help_with": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "audiences": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "business_style": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "personal_brand",
+        "faceless",
+        "hybrid",
+        null
+      ]
+    },
+    "technology_comfort": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "preferred_formats": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ai_involvement": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "target_market": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "customer_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "motivation": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "excitement_signals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

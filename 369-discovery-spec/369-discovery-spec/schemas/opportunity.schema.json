@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://369degrees.ai/schemas/opportunity.schema.json",
+  "title": "369 Degrees Product Opportunity",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "category",
+    "product",
+    "audience",
+    "problem",
+    "desired_outcome",
+    "format",
+    "why_user_fits",
+    "difficulty",
+    "creation_complexity",
+    "marketing_potential",
+    "business_model",
+    "price_range",
+    "expansion_opportunities",
+    "score",
+    "score_breakdown",
+    "recommended_next_step",
+    "validation_note"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "primary",
+        "radar",
+        "unexpected"
+      ]
+    },
+    "product": {
+      "type": "string"
+    },
+    "audience": {
+      "type": "string"
+    },
+    "problem": {
+      "type": "string"
+    },
+    "desired_outcome": {
+      "type": "string"
+    },
+    "format": {
+      "type": "string"
+    },
+    "why_user_fits": {
+      "type": "string"
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "creation_complexity": {
+      "type": "string"
+    },
+    "marketing_potential": {
+      "type": "string"
+    },
+    "business_model": {
+      "type": "string"
+    },
+    "price_range": {
+      "type": "string"
+    },
+    "expansion_opportunities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "score_breakdown": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "user_fit",
+        "problem_clarity",
+        "audience_clarity",
+        "product_specificity",
+        "creation_simplicity",
+        "time_fit",
+        "marketing_potential",
+        "business_style_fit",
+        "first_product_potential",
+        "expansion_potential"
+      ],
+      "properties": {
+        "user_fit": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 15
+        },
+        "problem_clarity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 15
+        },
+        "audience_clarity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "product_specificity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "creation_simplicity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "time_fit": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "marketing_potential": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "business_style_fit": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "first_product_potential": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "expansion_potential": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        }
+      }
+    },
+    "recommended_next_step": {
+      "type": "string"
+    },
+    "validation_note": {
+      "type": "string"
+    }
+  }
+}

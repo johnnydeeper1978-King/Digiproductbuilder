@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://369degrees.ai/schemas/blueprint.schema.json",
+  "title": "369 Degrees Digital Product Blueprint",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "recommended_product",
+    "why_this_product",
+    "target_customer",
+    "problem",
+    "desired_outcome",
+    "product_format",
+    "core_promise",
+    "suggested_price_range",
+    "business_model",
+    "brand_direction",
+    "marketing_direction",
+    "opportunity_score",
+    "opportunity_radar",
+    "what_to_do_next"
+  ],
+  "properties": {
+    "recommended_product": {
+      "type": "string"
+    },
+    "why_this_product": {
+      "type": "string"
+    },
+    "target_customer": {
+      "type": "string"
+    },
+    "problem": {
+      "type": "string"
+    },
+    "desired_outcome": {
+      "type": "string"
+    },
+    "product_format": {
+      "type": "string"
+    },
+    "core_promise": {
+      "type": "string"
+    },
+    "suggested_price_range": {
+      "type": "string"
+    },
+    "business_model": {
+      "type": "string"
+    },
+    "brand_direction": {
+      "type": "string"
+    },
+    "marketing_direction": {
+      "type": "string"
+    },
+    "opportunity_score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "opportunity_radar": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "title",
+          "reason"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "what_to_do_next": {
+      "type": "string"
+    }
+  }
+}
