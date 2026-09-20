@@ -1,0 +1,14 @@
+# Netlify config for the 369 Degrees Vite/React SPA.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# SPA fallback: every path serves index.html so client-side routes
+# (e.g. /discover, /builder) work on direct load and refresh.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
