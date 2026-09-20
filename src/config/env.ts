@@ -9,12 +9,17 @@ export interface ClientEnv {
   supabaseUrl: string | undefined;
   supabaseAnonKey: string | undefined;
   appUrl: string;
+  /** Whop hosted checkout link for the $47 Builder (public URL, not a secret). */
+  whopBuilderUrl: string;
 }
 
 export const env: ClientEnv = {
   supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
   supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY,
   appUrl: import.meta.env.VITE_APP_URL ?? "http://localhost:5173",
+  whopBuilderUrl:
+    import.meta.env.VITE_WHOP_BUILDER_URL ??
+    "https://whop.com/369-degrees-77fb/digital-product-builder-ad/",
 };
 
 /** True only when the public Supabase config is present. */

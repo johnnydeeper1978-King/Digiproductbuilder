@@ -1,33 +1,25 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/Card";
-import { Button, ButtonLink } from "@/components/ui/Button";
-import { paymentService } from "@/services/paymentService";
+import { ButtonLink } from "@/components/ui/Button";
 import { authService } from "@/services/authService";
-import { isSupabaseConfigured } from "@/config/env";
+import { env } from "@/config/env";
 
-/** The $47 Builder upgrade boundary. Honest value; no income guarantees. */
+/** The $47 Builder upgrade boundary. Checkout is hosted on Whop; access is
+ *  granted server-side once payment is confirmed (never by the browser). */
 export function Paywall({ context }: { context?: "blueprint" | "direct" }) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [authed, setAuthed] = useState<boolean | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
-    authService.getSession().then((s) => active && setAuthed(Boolean(s))).catch(() => active && setAuthed(false));
+    authService.getSession().then((s) => {
+      if (!active) return;
+      setAuthed(Boolean(s));
+      setEmail(s?.user?.email ?? null);
+    }).catch(() => active && setAuthed(false));
     return () => { active = false; };
   }, []);
-
-  const buy = async () => {
-    setError(null); setLoading(true);
-    try {
-      const res = await paymentService.startBuilderCheckout();
-      if (res.alreadyOwned) { window.location.assign("/builder"); return; }
-      if (res.url) { window.location.assign(res.url); return; }
-      setError("Checkout could not be started.");
-    } catch (e) { setError(e instanceof Error ? e.message : "Checkout failed."); }
-    finally { setLoading(false); }
-  };
 
   return (
     <Card style={{ maxWidth: 640 }}>
@@ -50,10 +42,6 @@ export function Paywall({ context }: { context?: "blueprint" | "direct" }) {
         No income or results are guaranteed — the Builder helps you create and launch; outcomes depend on your work and market.
       </p>
 
-      {!isSupabaseConfigured && (
-        <div className="d-notice">Payments aren't configured in this environment yet, so checkout can't run here.</div>
-      )}
-
       {authed === false ? (
         <div className="row" style={{ marginTop: "var(--space-4)" }}>
           <ButtonLink to="/login">Sign in to continue</ButtonLink>
@@ -61,10 +49,12 @@ export function Paywall({ context }: { context?: "blueprint" | "direct" }) {
         </div>
       ) : (
         <div style={{ marginTop: "var(--space-4)" }}>
-          <Button onClick={buy} disabled={loading || !isSupabaseConfigured}>
-            {loading ? "Starting checkout…" : "Get the Builder — $47"}
-          </Button>
-          {error && <p className="d-field-error">{error}</p>}
+          <a className="btn btn-primary" href={env.whopBuilderUrl} target="_blank" rel="noopener noreferrer">
+            Get the Builder — $47
+          </a>
+          <p className="dim" style={{ fontSize: "0.8rem", marginTop: 10 }}>
+            Secure checkout is handled by Whop. Please pay with{email ? <> the same email you signed up with (<strong>{email}</strong>)</> : " the same email you signed up with"} so we can unlock your access. It activates shortly after payment — refresh this page.
+          </p>
         </div>
       )}
     </Card>
