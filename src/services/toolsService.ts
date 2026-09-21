@@ -12,6 +12,14 @@ export interface Tool {
 }
 
 export const toolsService = {
+  async all(): Promise<Tool[]> {
+    if (!isSupabaseConfigured) return [];
+    const { data } = await requireSupabase().from("tools")
+      .select("id,name,category,purpose,recommended_use,alternative,affiliate_url,is_affiliate,disclosure")
+      .eq("active", true).order("category");
+    return (data ?? []) as Tool[];
+  },
+
   async byCategory(category: string): Promise<Tool[]> {
     if (!isSupabaseConfigured) return [];
     const { data } = await requireSupabase().from("tools")
