@@ -1,0 +1,6 @@
+project_id = "unsdlslapjpzyjoghhen"
+
+# Every function keeps verify_jwt = true except whop-webhook,
+# which authenticates by Whop signature instead.
+[functions.whop-webhook]
+verify_jwt = false

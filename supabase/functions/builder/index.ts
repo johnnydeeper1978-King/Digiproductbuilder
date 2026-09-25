@@ -1,17 +1,19 @@
 // Edge Function: `builder` — the server-side Builder boundary.
 // EVERY action: authenticate -> verify Builder entitlement (paid) -> load the
-// user's OWN product -> validate request -> (for generate) call provider,
-// validate shape, record ai_runs -> persist builder_state. Service role writes
-// the Builder-managed columns the client is revoked from. No fake AI content.
+// user's OWN product -> validate request -> (for generate) usage guards, call
+// provider, record usage, validate shape -> persist builder_state. Service role
+// writes the Builder-managed columns the client is revoked from. No fake AI content.
 import { corsHeaders, json } from "../_shared/cors.ts";
 import { getAdminClient, getCallerUid } from "../_shared/supabaseAdmin.ts";
 import { hasBuilderAccess } from "../_shared/entitlements.ts";
 import { selectProvider } from "../_shared/ai/index.ts";
 import { MissingProviderConfigError } from "../_shared/ai/resolveProvider.ts";
+import { checkBuilderUserCap, checkGlobalCap, MAX_TOKENS, usageColumns } from "../_shared/ai/limits.ts";
 import {
   BUILDER_SYSTEM_PROMPT, BUILDER_PHASE_ORDER, buildPhaseUserMessage, type BuilderPhase,
 } from "../_shared/prompts/builder.ts";
 import { validateBuilderRequest } from "../_shared/builder/validateRequest.ts";
+import { BUILDER_PROMPT_SCHEMA, validateBuilderPhase } from "../_shared/schema/validate.ts";
 
 function initState() {
   return {
@@ -20,6 +22,7 @@ function initState() {
     updatedAt: new Date().toISOString(),
   };
 }
+// deno-lint-ignore no-explicit-any
 function phaseSlot(state: any, phase: string) {
   state.phases[phase] ??= { status: "not-started", inputs: {}, outputs: [], updatedAt: null };
   return state.phases[phase];
@@ -84,6 +87,7 @@ Deno.serve(async (req) => {
     const { data: s } = await admin.from("discovery_sessions").select("user_profile").eq("id", product.discovery_session_id).maybeSingle();
     userProfile = s?.user_profile ?? null;
   }
+  // deno-lint-ignore no-explicit-any
   const state: any = product.builder_state ?? initState();
 
   const persist = async (extra: Record<string, unknown> = {}) => {
@@ -133,16 +137,21 @@ Deno.serve(async (req) => {
 
   // action === "generate": the AI boundary.
   if (req0.action === "generate") {
+    const userCap = await checkBuilderUserCap(admin, uid);
+    if (!userCap.ok) return json({ error: userCap.code, message: userCap.message }, userCap.status);
+    const cap = await checkGlobalCap(admin);
+    if (!cap.ok) return json({ error: cap.code, message: cap.message }, cap.status);
+
     const slot = phaseSlot(state, req0.phase!);
     if (req0.inputs) slot.inputs = { ...slot.inputs, ...req0.inputs };
 
     const { data: run } = await admin.from("ai_runs").insert({
       user_id: uid, product_id: product.id, run_type: `builder_${req0.phase}`,
-      status: "running", input_metadata: { phase: req0.phase },
+      status: "running", started_at: new Date().toISOString(), input_metadata: { phase: req0.phase },
     }).select("id").single();
     const fail = async (code: string, message: string, status: number, validation = "not_validated") => {
       if (run) await admin.from("ai_runs").update({
-        status: "failed", error_code: code, error_message: message,
+        status: "failed", error_code: code, error_message: message.slice(0, 2000),
         validation_status: validation, finished_at: new Date().toISOString(),
       }).eq("id", run.id);
       return json({ error: code, message }, status);
@@ -154,6 +163,17 @@ Deno.serve(async (req) => {
       if (e instanceof MissingProviderConfigError) return fail("ai_not_configured", e.message, 501);
       return fail("provider_error", String((e as Error).message), 500);
     }
+
+    // Only catalogue tools may be recommended (tools.sql rule: nothing invented).
+    const { data: toolRows } = await admin.from("tools")
+      .select("name, category, purpose, recommended_use, how_to, alternative, affiliate_url, is_affiliate, disclosure")
+      .eq("active", true).contains("phases", [req0.phase]);
+    const tools = (toolRows ?? []).map((t) => ({
+      name: t.name, category: t.category, purpose: t.purpose, use: t.recommended_use,
+      howTo: t.how_to, alternative: t.alternative,
+      ...(t.is_affiliate && t.affiliate_url ? { link: t.affiliate_url, disclosure: t.disclosure } : {}),
+    }));
+    const toolNames = new Set(tools.map((t) => t.name.toLowerCase()));
 
     // Prior phase outputs (latest per completed phase) as context — no re-asking.
     const priorOutputs: Record<string, unknown> = {};
@@ -167,18 +187,26 @@ Deno.serve(async (req) => {
       completion = await provider.complete({
         messages: [
           { role: "system", content: BUILDER_SYSTEM_PROMPT },
-          { role: "user", content: buildPhaseUserMessage({ phase: req0.phase as BuilderPhase, blueprint, userProfile, priorOutputs, inputs: slot.inputs }) },
+          { role: "user", content: buildPhaseUserMessage({ phase: req0.phase as BuilderPhase, blueprint, userProfile, priorOutputs, inputs: slot.inputs, tools }) },
         ],
+        jsonSchema: BUILDER_PROMPT_SCHEMA,
+        maxTokens: MAX_TOKENS.builder,
       });
     } catch (e) { return fail("ai_unavailable", String((e as Error).message), 502); }
 
-    let parsed: any;
-    try { parsed = completion.json ?? JSON.parse(completion.content); }
-    catch { return fail("ai_output_unparseable", "Model output was not valid JSON", 422, "invalid"); }
-    // No project JSON schema exists for Builder output; do a light shape check.
-    if (typeof parsed !== "object" || parsed === null || typeof parsed.summary !== "string" || !Array.isArray(parsed.sections)) {
-      return fail("builder_output_invalid", "Output did not match the expected Builder shape", 422, "invalid");
+    if (run) await admin.from("ai_runs").update(usageColumns(completion)).eq("id", run.id);
+    if (completion.stopReason === "max_tokens") {
+      return fail("ai_output_truncated", "Model output hit the token limit", 502, "invalid");
     }
+
+    // deno-lint-ignore no-explicit-any
+    const parsed = completion.json as any;
+    if (parsed === undefined) return fail("ai_output_unparseable", "Model output was not valid JSON", 422, "invalid");
+    const check = validateBuilderPhase(parsed);
+    if (!check.valid) return fail("builder_output_invalid", check.errors.join("; "), 422, "invalid");
+    // Drop any tool the model named that isn't in the catalogue rather than show it.
+    // deno-lint-ignore no-explicit-any
+    parsed.tools = (parsed.tools ?? []).filter((t: any) => toolNames.has(String(t.name).toLowerCase()));
 
     // Append a new output version (preserve prior versions for auditability/revision).
     slot.outputs.push({ id: crypto.randomUUID(), createdAt: new Date().toISOString(), data: parsed });
@@ -186,8 +214,7 @@ Deno.serve(async (req) => {
     await persist();
 
     if (run) await admin.from("ai_runs").update({
-      status: "succeeded", validation_status: "valid",
-      provider: completion.provider, model: completion.model, output: parsed,
+      status: "succeeded", validation_status: "valid", output: parsed,
       finished_at: new Date().toISOString(),
     }).eq("id", run.id);
 

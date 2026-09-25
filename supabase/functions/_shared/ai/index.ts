@@ -1,6 +1,6 @@
-// Server-side provider registry wiring (Deno). Registers the (stub) adapters
-// and exposes a resolver that reads keys from Deno.env. Real completions are
-// not implemented yet — adapters throw rather than fabricate output.
+// Server-side provider registry wiring (Deno). Registers the adapters and
+// exposes a resolver that reads keys from Deno.env. Anthropic is live;
+// OpenAI and Perplexity remain stubs that throw rather than fabricate output.
 import { registerProvider, getProvider } from "./provider.ts";
 import { openaiProvider } from "./openai.ts";
 import { anthropicProvider } from "./anthropic.ts";

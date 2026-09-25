@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://369degrees.co.za/schemas/blueprint.schema.json",
   "title": "Digital Product Blueprint",
-  "description": "Final output of Free Discovery; the starting context for the $47 Builder.",
+  "description": "The free Product Guide (Discovery output) and the starting context for the $47 Builder.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -10,34 +10,63 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name": { "type": "string" },
-        "concept": { "type": "string" },
+        "name": {
+          "type": "string"
+        },
+        "concept": {
+          "type": "string"
+        },
         "format": {
           "$ref": "https://369degrees.co.za/schemas/opportunity.schema.json#/$defs/productFormat"
         },
-        "corePromise": { "type": "string" }
+        "corePromise": {
+          "type": "string"
+        }
       },
-      "required": ["name", "concept"]
+      "required": [
+        "name",
+        "concept"
+      ]
     },
     "buyer": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "targetCustomer": { "type": "string" },
-        "customerProfile": { "type": "string" },
-        "problem": { "type": "string" },
-        "desiredOutcome": { "type": "string" }
+        "targetCustomer": {
+          "type": "string"
+        },
+        "customerProfile": {
+          "type": "string"
+        },
+        "problem": {
+          "type": "string"
+        },
+        "desiredOutcome": {
+          "type": "string"
+        }
       },
-      "required": ["targetCustomer", "problem", "desiredOutcome"]
+      "required": [
+        "targetCustomer",
+        "problem",
+        "desiredOutcome"
+      ]
     },
     "positioning": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "mainPositioning": { "type": "string" },
-        "differentiation": { "type": "string" },
-        "keyPromise": { "type": "string" },
-        "whyThisProduct": { "type": "string" }
+        "mainPositioning": {
+          "type": "string"
+        },
+        "differentiation": {
+          "type": "string"
+        },
+        "keyPromise": {
+          "type": "string"
+        },
+        "whyThisProduct": {
+          "type": "string"
+        }
       }
     },
     "content": {
@@ -51,18 +80,36 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-              "title": { "type": "string" },
-              "description": { "type": "string" }
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              }
             },
-            "required": ["title"]
+            "required": [
+              "title"
+            ]
           }
         },
-        "deliverables": { "type": "array", "items": { "type": "string" } },
-        "resources": { "type": "array", "items": { "type": "string" } },
+        "deliverables": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "assets": {
           "type": "array",
           "description": "Templates / assets where relevant.",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -71,25 +118,56 @@
       "description": "Pricing hypothesis with reasoning. Never presented as guaranteed.",
       "additionalProperties": false,
       "properties": {
-        "suggestedPrice": { "type": "number", "minimum": 0 },
+        "suggestedPrice": {
+          "type": "number",
+          "minimum": 0
+        },
         "currency": {
           "type": "string",
           "description": "ISO 4217 currency code, e.g. ZAR, USD."
         },
-        "priceHypothesis": { "type": "string" },
-        "reasoning": { "type": "string" }
+        "priceHypothesis": {
+          "type": "string"
+        },
+        "reasoning": {
+          "type": "string"
+        }
       },
-      "required": ["reasoning"]
+      "required": [
+        "reasoning"
+      ]
     },
     "marketing": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "contentAngles": { "type": "array", "items": { "type": "string" } },
-        "hooks": { "type": "array", "items": { "type": "string" } },
-        "platforms": { "type": "array", "items": { "type": "string" } },
-        "leadMagnets": { "type": "array", "items": { "type": "string" } },
-        "conversionPath": { "type": "string" }
+        "contentAngles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hooks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "platforms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "leadMagnets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "conversionPath": {
+          "type": "string"
+        }
       }
     },
     "launch": {
@@ -103,10 +181,16 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-              "step": { "type": "string" },
-              "description": { "type": "string" }
+              "step": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              }
             },
-            "required": ["step"]
+            "required": [
+              "step"
+            ]
           }
         }
       }
@@ -114,7 +198,140 @@
     "nextStep": {
       "type": "string",
       "description": "Handoff note for the Builder so the user does not repeat Discovery."
+    },
+    "summary": {
+      "type": "string",
+      "description": "Plain-language summary: what the product is, who it's for, the result it delivers."
+    },
+    "creation": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "What building it involves \u2014 the outline, not the step-by-step (that is the Builder).",
+      "properties": {
+        "outline": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "step": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "step"
+            ]
+          }
+        },
+        "effort": {
+          "type": "string",
+          "description": "Realistic effort estimate given the user's stated time."
+        }
+      }
+    },
+    "marketingPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A first 30-day marketing plan and starter content ideas.",
+      "properties": {
+        "first30Days": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "week": {
+                "type": "string"
+              },
+              "focus": {
+                "type": "string"
+              },
+              "actions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "week",
+              "focus"
+            ]
+          }
+        },
+        "contentIdeas": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "firstCustomers": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "How to find the first buyers.",
+      "properties": {
+        "whereToFind": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "plan": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "builderPreview": {
+      "type": "string",
+      "description": "What the $47 Builder will walk them through next, specific to this product."
+    },
+    "alternativeOpportunities": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 3,
+      "description": "2\u20133 other opportunities worth considering, drawn from Discovery. Profitability is a hypothesis, never a promise.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "targetBuyer": {
+            "type": "string"
+          },
+          "format": {
+            "$ref": "https://369degrees.co.za/schemas/opportunity.schema.json#/$defs/productFormat"
+          },
+          "whyItCouldPay": {
+            "type": "string",
+            "description": "Why it could be profitable: demand signals, urgency, price point, reachable audience. Hypothesis only."
+          },
+          "priceHypothesis": {
+            "type": "string"
+          },
+          "fitForYou": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "targetBuyer",
+          "whyItCouldPay"
+        ]
+      }
     }
   },
-  "required": ["product", "buyer"]
+  "required": [
+    "product",
+    "buyer"
+  ]
 }

@@ -1,14 +1,17 @@
 // Edge Function: `blueprint-generate` — the Blueprint AI boundary.
-// validate request -> load session + SELECTED opportunity + profile -> build
-// AI input -> provider abstraction -> validate against blueprint.schema.json ->
-// record ai_runs -> persist blueprint -> associate/create product (authed).
+// validate request -> load session + SELECTED opportunity + profile -> usage
+// guards -> provider (with the real schema) -> record usage -> validate against
+// blueprint.schema.json -> persist blueprint -> associate/create product (authed).
 // Honest error if AI unconfigured; never fabricates a Blueprint.
 import { corsHeaders, json } from "../_shared/cors.ts";
 import { getAdminClient, getCallerUid } from "../_shared/supabaseAdmin.ts";
 import { selectProvider } from "../_shared/ai/index.ts";
 import { MissingProviderConfigError } from "../_shared/ai/resolveProvider.ts";
+import { checkGlobalCap, checkSessionRun, MAX_TOKENS, usageColumns } from "../_shared/ai/limits.ts";
 import { BLUEPRINT_SYSTEM_PROMPT } from "../_shared/prompts/blueprint.ts";
-import { validateBlueprintData } from "../_shared/schema/validate.ts";
+import { BLUEPRINT_PROMPT_SCHEMAS, validateBlueprintData } from "../_shared/schema/validate.ts";
+
+const RUN_TYPE = "blueprint_generate";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -40,20 +43,38 @@ Deno.serve(async (req) => {
     return json({ error: "forbidden" }, 403);
   }
 
+  // One Blueprint per session: a repeat call returns the stored one for free.
+  const gate = await checkSessionRun(admin, session.id, RUN_TYPE);
+  if (!gate.ok && gate.code === "already_generated") {
+    const { data: bp } = await admin.from("blueprints").select("id, data")
+      .eq("session_id", session.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+    const { data: prod } = await admin.from("products").select("id")
+      .eq("discovery_session_id", session.id).maybeSingle();
+    return json({ blueprint: bp?.data ?? null, blueprintId: bp?.id ?? null, productId: prod?.id ?? null, productNote: null, cached: true });
+  }
+  if (!gate.ok) return json({ error: gate.code, message: gate.message }, gate.status);
+
   // The selected opportunity is required context.
   const { data: selected } = await admin.from("opportunities")
     .select("*").eq("session_id", session.id).eq("is_selected", true).maybeSingle();
   if (!selected) return json({ error: "no_selected_opportunity" }, 400);
 
+  const cap = await checkGlobalCap(admin);
+  if (!cap.ok) return json({ error: cap.code, message: cap.message }, cap.status);
+
+  // Non-selected opportunities feed the guide's "other profitable opportunities".
+  const { data: others } = await admin.from("opportunities")
+    .select("data").eq("session_id", session.id).eq("is_selected", false).limit(6);
+
   const { data: run } = await admin.from("ai_runs").insert({
     user_id: session.user_id, session_id: session.id,
-    run_type: "blueprint_generate", status: "running",
+    run_type: RUN_TYPE, status: "running", started_at: new Date().toISOString(),
     input_metadata: { opportunity_id: selected.id },
   }).select("id").single();
 
   const fail = async (code: string, message: string, status: number, validation = "not_validated") => {
     if (run) await admin.from("ai_runs").update({
-      status: "failed", error_code: code, error_message: message,
+      status: "failed", error_code: code, error_message: message.slice(0, 2000),
       validation_status: validation, finished_at: new Date().toISOString(),
     }).eq("id", run.id);
     return json({ error: code, message }, status);
@@ -71,15 +92,20 @@ Deno.serve(async (req) => {
     completion = await provider.complete({
       messages: [
         { role: "system", content: BLUEPRINT_SYSTEM_PROMPT },
-        { role: "user", content: JSON.stringify({ userProfile: session.user_profile ?? {}, selectedOpportunity: selected.data }) },
+        { role: "user", content: JSON.stringify({ userProfile: session.user_profile ?? {}, selectedOpportunity: selected.data, otherOpportunities: (others ?? []).map((o) => o.data) }) },
       ],
-      jsonSchema: { $ref: "https://369degrees.co.za/schemas/blueprint.schema.json" },
+      jsonSchema: BLUEPRINT_PROMPT_SCHEMAS,
+      maxTokens: MAX_TOKENS.blueprint_generate,
     });
   } catch (e) { return fail("ai_unavailable", String((e as Error).message), 502); }
 
-  let parsed: unknown;
-  try { parsed = completion.json ?? JSON.parse(completion.content); }
-  catch { return fail("ai_output_unparseable", "Model output was not valid JSON", 422, "invalid"); }
+  if (run) await admin.from("ai_runs").update(usageColumns(completion)).eq("id", run.id);
+  if (completion.stopReason === "max_tokens") {
+    return fail("ai_output_truncated", "Model output hit the token limit", 502, "invalid");
+  }
+
+  const parsed = completion.json;
+  if (parsed === undefined) return fail("ai_output_unparseable", "Model output was not valid JSON", 422, "invalid");
 
   const result = validateBlueprintData(parsed);
   if (!result.valid) return fail("blueprint_invalid", result.errors.join("; "), 422, "invalid");
@@ -117,7 +143,6 @@ Deno.serve(async (req) => {
 
   if (run) await admin.from("ai_runs").update({
     status: "succeeded", validation_status: "valid",
-    provider: completion.provider, model: completion.model,
     finished_at: new Date().toISOString(),
   }).eq("id", run.id);
 

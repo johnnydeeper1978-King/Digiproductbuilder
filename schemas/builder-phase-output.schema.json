@@ -1,0 +1,14 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://369degrees.co.za/schemas/builder-phase-output.schema.json",
+"title":"Builder phase output","description":"One Builder phase: guidance the user executes themselves (master build instructions: questions, decisions, customized instructions, prompts, recommended tools, implementation steps, next actions).",
+"type":"object","additionalProperties":false,
+"properties":{
+ "why":{"type":"string","description":"Why this phase matters for THIS product."},
+ "decisions":{"type":"array","maxItems":4,"items":{"type":"object","additionalProperties":false,"properties":{"question":{"type":"string"},"options":{"type":"array","items":{"type":"string"}},"recommendation":{"type":"string"},"reason":{"type":"string"}},"required":["question","recommendation"]}},
+ "steps":{"type":"array","minItems":2,"maxItems":8,"items":{"type":"object","additionalProperties":false,"properties":{"title":{"type":"string"},"where":{"type":"string","description":"Tool/platform name from the catalogue, or a generic description."},"how":{"type":"string"},"prompt":{"type":"string","description":"Copy-ready prompt, if this step uses an AI."},"outcome":{"type":"string","description":"What they should have when the step is done."}},"required":["title","how","outcome"]}},
+ "prompts":{"type":"array","maxItems":5,"items":{"type":"object","additionalProperties":false,"properties":{"goal":{"type":"string"},"tool":{"type":"string"},"prompt":{"type":"string"}},"required":["goal","prompt"]}},
+ "tools":{"type":"array","maxItems":6,"items":{"type":"object","additionalProperties":false,"properties":{"name":{"type":"string"},"useFor":{"type":"string"},"howTo":{"type":"string"}},"required":["name","useFor"]}},
+ "checklist":{"type":"array","minItems":2,"maxItems":10,"items":{"type":"string"}},
+ "mayChange":{"type":"array","maxItems":5,"items":{"type":"string"},"description":"Platform details that change often; user should check before relying on them."},
+ "nextAction":{"type":"string"}
+},
+"required":["why","steps","checklist","nextAction"]}
