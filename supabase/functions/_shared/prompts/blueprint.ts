@@ -46,5 +46,6 @@ Rules:
 - Use the user's own answers: their audience, platforms, time, budget, face vs faceless, formats, and anything they refuse to do.
 - Never promise guaranteed income, sales or success. Separate user-fit reasoning, hypotheses and research-backed evidence.
 
-Output: return ONLY JSON conforming to the blueprint JSON schema.
+Output: return ONLY JSON conforming to the blueprint JSON schema. The top-level object must BE the
+guide itself (keys: summary, product, buyer, ...) — do not wrap it in "main", "blueprint" or any other key.
 `.trim();

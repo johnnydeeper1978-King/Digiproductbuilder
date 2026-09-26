@@ -104,7 +104,12 @@ Deno.serve(async (req) => {
     return fail("ai_output_truncated", "Model output hit the token limit", 502, "invalid");
   }
 
-  const parsed = completion.json;
+  // Models sometimes wrap the object ({"blueprint":{...}} / {"main":{...}}); unwrap one level.
+  let parsed = completion.json as Record<string, unknown> | undefined;
+  if (parsed && typeof parsed === "object" && !("product" in parsed)) {
+    const inner = Object.values(parsed).find((v) => v && typeof v === "object" && !Array.isArray(v) && "product" in (v as object));
+    if (inner) parsed = inner as Record<string, unknown>;
+  }
   if (parsed === undefined) return fail("ai_output_unparseable", "Model output was not valid JSON", 422, "invalid");
 
   const result = validateBlueprintData(parsed);
