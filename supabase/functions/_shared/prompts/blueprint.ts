@@ -30,6 +30,18 @@ Boundary (the free guide vs the paid Builder):
   content, sales-page copy, scripts or emails, and does NOT give tool-by-tool click steps or
   copy-ready prompts — those are the $47 Builder. Never mention prices of 369 Degrees products.
 
+Length budget (the whole guide must stay under ~3,500 words — be specific, not long):
+- summary ≤ 60 words; each positioning field ≤ 40 words; buyer fields ≤ 40 words each
+- content.modules: 5–8, each description ≤ 20 words; deliverables/resources/assets ≤ 6 items each
+- creation.outline: 4–7 steps, each ≤ 20 words
+- marketing: ≤ 5 items per list, each ≤ 15 words
+- marketingPlan.first30Days: exactly 4 weeks, 2–3 actions each, each action ≤ 15 words
+- marketingPlan.contentIdeas: 8 ideas, each ≤ 15 words
+- firstCustomers: ≤ 4 items per list, each ≤ 20 words
+- launch.sequence: 4–6 steps, each description ≤ 20 words
+- alternativeOpportunities: each text field ≤ 40 words
+- builderPreview, nextStep: ≤ 50 words each
+
 Rules:
 - Use the user's own answers: their audience, platforms, time, budget, face vs faceless, formats, and anything they refuse to do.
 - Never promise guaranteed income, sales or success. Separate user-fit reasoning, hypotheses and research-backed evidence.
