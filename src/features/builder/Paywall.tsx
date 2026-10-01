@@ -3,8 +3,7 @@ import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/Card";
 import { ButtonLink } from "@/components/ui/Button";
 import { authService } from "@/services/authService";
-import { env } from "@/config/env";
-import { catalogService } from "@/services/catalogService";
+import { AccessError, catalogService } from "@/services/catalogService";
 
 /** The $47 Builder upgrade boundary. Checkout is hosted on Whop; access is
  *  granted server-side once payment is confirmed (never by the browser). */
@@ -57,8 +56,11 @@ export function Paywall({ context }: { context?: "blueprint" | "direct" }) {
             try {
               const r = await catalogService.checkout("builder");
               if (r.alreadyOwned) { window.location.assign("/builder"); return; }
-              window.location.assign(r.url ?? env.whopBuilderUrl);
-            } catch { window.location.assign(env.whopBuilderUrl); }
+              if (!r.url) { setErr("Checkout is temporarily unavailable. Please try again in a moment."); return; }
+              window.location.assign(r.url);
+            } catch (e) {
+              setErr(e instanceof AccessError ? e.message : "Checkout is temporarily unavailable. Please try again in a moment.");
+            }
             finally { setBusy(false); }
           }}>
             {busy ? "Opening secure checkout…" : "Get the Builder — $47"}
