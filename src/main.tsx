@@ -4,6 +4,7 @@ import App from "@/App";
 import "@/styles/globals.css";
 import "@/styles/marketing.css";
 import "@/styles/app.css";
+import "@/styles/market.css";
 
 const rootEl = document.getElementById("root");
 if (!rootEl) throw new Error("Root element #root not found");

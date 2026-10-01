@@ -181,3 +181,14 @@ p { margin: 0 0 var(--space-4); color: var(--text-muted); }
   border: 1px solid var(--border-strong); font-size: 0.72rem; color: var(--text-dim); flex-shrink: 0; }
 .phase-dot-active { border-color: var(--blue-400); color: var(--blue-400); }
 .phase-dot-done { background: var(--blue-500); border-color: var(--blue-500); color: #fff; }
+
+/* Discovery interview additions */
+.d-intro-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); margin: var(--space-6) 0 var(--space-4); }
+.d-intro-grid > div { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-4); }
+.d-intro-grid small { display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--blue-400); margin-bottom: 6px; }
+.d-intro-grid p { margin: 0; font-size: 0.92rem; line-height: 1.55; color: var(--text-muted); }
+@media (max-width: 720px) { .d-intro-grid { grid-template-columns: 1fr; } }
+.d-section-intro { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.25); border-radius: var(--radius-sm); padding: 0.8rem 1rem; color: var(--text-muted); font-size: 0.92rem; margin: var(--space-4) 0 0; }
+.d-linkbtn { background: none; border: 0; color: var(--text-dim); text-decoration: underline; cursor: pointer; margin-top: var(--space-4); font-size: 0.85rem; padding: 0; }
+.footer a:hover { color: var(--text); }
+.d-wrap .btn { white-space: normal; text-align: center; }

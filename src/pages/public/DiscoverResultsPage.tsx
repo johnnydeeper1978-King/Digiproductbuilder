@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { catalogService } from "@/services/catalogService";
+import type { CatalogProduct } from "@/features/catalog/types";
 import { Seo } from "@/components/seo/Seo";
 import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
@@ -15,7 +17,7 @@ import type { Opportunity } from "@/types/schemas/opportunity";
 export function DiscoverResultsPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const passed = (location.state as { output?: DiscoveryOutput; sessionId?: string } | null) ?? null;
+  const passed = (location.state as { output?: DiscoveryOutput; sessionId?: string } | null) ?? storedResults();
   const [output, setOutput] = useState<DiscoveryOutput | null>(passed?.output ?? null);
   const [loading, setLoading] = useState(!passed?.output && Boolean(passed?.sessionId));
   const [choosing, setChoosing] = useState<string | null>(null);
@@ -41,6 +43,7 @@ export function DiscoverResultsPage() {
     try {
       await discoveryService.selectOpportunity(ref, o.id);
       const { blueprint } = await discoveryService.generateBlueprint(ref);
+      try { sessionStorage.setItem("369d.discovery.blueprint", JSON.stringify({ blueprint, sessionId })); } catch { /* ignore */ }
       navigate("/blueprint", { state: { blueprint, sessionId } });
     } catch (e) {
       setChooseError(e instanceof Error ? e.message : "Couldn't generate the blueprint.");
@@ -83,10 +86,31 @@ export function DiscoverResultsPage() {
                   <OppCard key={i} o={o} unexpected onChoose={choose} busy={choosing === o.id} disabled={Boolean(choosing)} />)}
               </>
             )}
+            <ReadyMadeStrip />
           </>
         )}
       </div>
     </Container>
+  );
+}
+
+function storedResults(): { output?: DiscoveryOutput; sessionId?: string } | null {
+  try { return JSON.parse(sessionStorage.getItem("369d.discovery.output") ?? "null"); } catch { return null; }
+}
+
+/** Cross-sell: ready-made systems, shown only after the user's own results. */
+function ReadyMadeStrip() {
+  const [items, setItems] = useState<CatalogProduct[]>([]);
+  useEffect(() => { catalogService.catalog().then((p) => setItems(p.filter((x) => x.status === "live").slice(0, 3))).catch(() => {}); }, []);
+  if (!items.length) return null;
+  return (
+    <Card style={{ marginTop: "var(--space-8)" }}>
+      <span className="eyebrow">Prefer a ready-made system?</span>
+      <p className="muted" style={{ marginTop: 6 }}>Alongside building your own product, you can use one of our finished systems today.</p>
+      {items.map((p) => (
+        <p key={p.key} style={{ margin: "8px 0" }}><Link to={`/marketplace/${p.key}`}><strong>{p.title}</strong></Link>{p.tagline ? <span className="muted"> — {p.tagline}</span> : null}</p>
+      ))}
+    </Card>
   );
 }
 

@@ -1,9 +1,11 @@
 // Edge Function: `whop-webhook` — AUTHORITATIVE payment confirmation.
 // Deployed with verify_jwt=false: Whop can't send a Supabase JWT, so the
 // Standard Webhooks signature below is the authentication.
-//   payment.succeeded -> purchase marked 'paid' (the ONLY path to Builder access)
+//   payment.succeeded -> purchase marked 'paid' (the ONLY path to paid access,
+//                        for the Builder and every Marketplace product)
 //   dispute.created   -> purchase marked 'disputed' (access paused)
-// Idempotent on webhook-id; responds fast so Whop doesn't retry.
+// The product is resolved from the Whop product id via catalog_products
+// (metadata is only a fallback). Idempotent on webhook-id.
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { getAdminClient } from "../_shared/supabaseAdmin.ts";
 import { verifyWhopSignature, whopIds } from "../_shared/whop.ts";
@@ -19,13 +21,26 @@ async function logEvent(admin: SupabaseClient, userId: string | null, type: stri
   await admin.from("events").insert({ user_id: userId, type, payload });
 }
 
+/** Map the paid Whop product to our catalog key. Product id wins over metadata. */
+async function resolveProductKey(admin: SupabaseClient, whopProductId: string | null, meta: Obj): Promise<string | null> {
+  if (whopProductId) {
+    const { data } = await admin.from("catalog_products").select("key").eq("whop_product_id", whopProductId).maybeSingle();
+    if (data) return data.key as string;
+    if (whopProductId === whopIds().builderProductId) return "builder";
+    return null; // a Whop product we don't sell through the platform
+  }
+  const metaKey = text(meta.product_key);
+  if (!metaKey) return null;
+  const { data } = await admin.from("catalog_products").select("key").eq("key", metaKey).maybeSingle();
+  return data ? (data.key as string) : null;
+}
+
 async function handlePayment(admin: SupabaseClient, p: Obj) {
-  const { builderProductId } = whopIds();
   const meta: Obj = p.metadata ?? {};
-  const productId = text(p.product?.id) ?? text(p.product_id);
-  const isBuilder = productId === builderProductId || meta.product_key === "builder";
-  if (!isBuilder) {
-    await logEvent(admin, null, "whop_payment_ignored", { payment_id: p.id, product_id: productId });
+  const whopProductId = text(p.product?.id) ?? text(p.product_id);
+  const productKey = await resolveProductKey(admin, whopProductId, meta);
+  if (!productKey) {
+    await logEvent(admin, null, "whop_payment_ignored", { payment_id: p.id, product_id: whopProductId });
     return;
   }
 
@@ -49,12 +64,14 @@ async function handlePayment(admin: SupabaseClient, p: Obj) {
     currency: text(p.currency),
   };
 
-  // 1. Our own checkout: flip the pending row created by whop-checkout.
+  // 1. Our own checkout: flip the pending row created by whop-checkout
+  //    (only if it is for the same product that was actually paid).
   if (typeof meta.purchase_id === "string" && UUID.test(meta.purchase_id)) {
     const { data: updated } = await admin.from("purchases")
-      .update(paidFields).eq("id", meta.purchase_id).neq("status", "paid").select("id, user_id");
+      .update(paidFields).eq("id", meta.purchase_id).eq("product_key", productKey)
+      .neq("status", "paid").select("id, user_id");
     if (updated && updated.length > 0) {
-      await logEvent(admin, updated[0].user_id, "purchase_completed", { purchase_id: updated[0].id, product_key: "builder", source: "checkout" });
+      await logEvent(admin, updated[0].user_id, "purchase_completed", { purchase_id: updated[0].id, product_key: productKey, source: "checkout" });
       return;
     }
   }
@@ -69,10 +86,10 @@ async function handlePayment(admin: SupabaseClient, p: Obj) {
   // Unmatched buyers get an unclaimed row; they claim it on sign-in with the
   // same confirmed email (see _shared/entitlements.ts).
   const { data: inserted, error } = await admin.from("purchases")
-    .insert({ user_id: userId, product_key: "builder", ...paidFields }).select("id").single();
+    .insert({ user_id: userId, product_key: productKey, ...paidFields }).select("id").single();
   if (error && error.code !== "23505") throw new Error(error.message);
   await logEvent(admin, userId, "purchase_completed", {
-    purchase_id: inserted?.id ?? null, product_key: "builder", source: userId ? "link_matched" : "link_unclaimed",
+    purchase_id: inserted?.id ?? null, product_key: productKey, source: userId ? "link_matched" : "link_unclaimed",
   });
 }
 

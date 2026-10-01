@@ -1,14 +1,15 @@
 import { NavLink, Link } from "react-router-dom";
 import { ButtonLink } from "@/components/ui/Button";
+import { useSession } from "@/features/catalog/useSession";
 
 const links = [
-  { to: "/how-it-works", label: "How it works" },
   { to: "/discover", label: "Discover" },
   { to: "/marketplace", label: "Marketplace" },
-  { to: "/workforce", label: "AI Workforce" },
+  { to: "/how-it-works", label: "How it works" },
 ];
 
 export function Navbar() {
+  const session = useSession();
   return (
     <header className="nav">
       <div className="container nav-inner">
@@ -23,8 +24,10 @@ export function Navbar() {
           ))}
         </nav>
         <div className="row">
-          <ButtonLink to="/login" variant="ghost" size="sm">Sign in</ButtonLink>
-          <ButtonLink to="/get-started" size="sm">Get started</ButtonLink>
+          {session
+            ? <ButtonLink to="/library" variant="ghost" size="sm">My Library</ButtonLink>
+            : <ButtonLink to="/login" variant="ghost" size="sm">Sign in</ButtonLink>}
+          <ButtonLink to="/marketplace" size="sm">Marketplace</ButtonLink>
         </div>
       </div>
     </header>

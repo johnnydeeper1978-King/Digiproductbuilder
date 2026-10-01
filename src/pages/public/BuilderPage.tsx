@@ -9,7 +9,7 @@ import { BuilderWorkspace } from "@/features/builder/BuilderWorkspace";
 
 /**
  * /builder — access is gated on VERIFIED payment (a paid purchases row written
- * by the Stripe webhook), read from the DB. A frontend redirect from checkout
+ * by the verified Whop webhook), read from the DB. A frontend redirect from checkout
  * never grants access on its own.
  */
 export function BuilderPage() {
@@ -35,7 +35,7 @@ export function BuilderPage() {
           <>
             {justCheckedOut && (
               <div className="d-notice">
-                Thanks! We're confirming your payment. Access unlocks automatically once Stripe confirms it —
+                Thanks! We're confirming your payment. Access unlocks automatically once Whop confirms it —
                 this can take a moment. You won't be charged twice.
               </div>
             )}

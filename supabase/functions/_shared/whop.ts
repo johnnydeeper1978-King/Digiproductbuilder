@@ -40,39 +40,42 @@ type Plan = {
   release_method?: string; plan_type?: string; created_at?: string | number;
 };
 
-let cachedPlanId: string | null = null;
+const planCache = new Map<string, string>();
 
-/** The Builder's buy-now plan, looked up from the product so price changes need no redeploy. */
-export async function resolveBuilderPlanId(): Promise<string> {
-  const override = Deno.env.get("WHOP_BUILDER_PLAN_ID");
+/** The product's buy-now plan, looked up live so price changes in Whop need no redeploy. */
+export async function resolvePlanId(whopProductId: string, override?: string | null): Promise<string> {
   if (override) return override;
-  if (cachedPlanId) return cachedPlanId;
+  if (whopProductId === whopIds().builderProductId) {
+    const env = Deno.env.get("WHOP_BUILDER_PLAN_ID");
+    if (env) return env;
+  }
+  const hit = planCache.get(whopProductId);
+  if (hit) return hit;
 
-  const { companyId, builderProductId } = whopIds();
+  const { companyId } = whopIds();
   const qs = new URLSearchParams({ company_id: companyId, first: "50" });
-  qs.append("product_ids[]", builderProductId);
+  qs.append("product_ids[]", whopProductId);
   const res = await whopFetch(`/plans?${qs}`) as { data?: Plan[] };
-  const plans = (res.data ?? []).filter((p) => p.product?.id === builderProductId);
+  const plans = (res.data ?? []).filter((p) => p.product?.id === whopProductId);
   const buyable = plans.filter((p) => (p.release_method ?? "buy_now") === "buy_now" && p.visibility !== "archived");
   const pick = buyable.find((p) => p.visibility === "visible" && p.plan_type === "one_time")
     ?? buyable.find((p) => p.visibility === "visible")
     ?? buyable[0];
-  if (!pick) throw new Error(`No buy-now plan found for Whop product ${builderProductId}.`);
-  cachedPlanId = pick.id;
+  if (!pick) throw new Error(`No buy-now plan found for Whop product ${whopProductId}.`);
+  planCache.set(whopProductId, pick.id);
   return pick.id;
 }
 
-/** A checkout carrying our user/purchase ids in metadata; the payment inherits it. */
-export async function createBuilderCheckout(opts: {
-  userId: string; purchaseId: string; redirectUrl?: string;
+/** A checkout carrying our user/purchase/product ids in metadata; the payment inherits it. */
+export async function createCheckout(opts: {
+  planId: string; userId: string; purchaseId: string; productKey: string; redirectUrl?: string;
 }): Promise<{ id: string; url: string }> {
-  const planId = await resolveBuilderPlanId();
   const res = await whopFetch("/checkout_configurations", {
     method: "POST",
     body: JSON.stringify({
       mode: "payment",
-      plan_id: planId,
-      metadata: { user_id: opts.userId, purchase_id: opts.purchaseId, product_key: "builder" },
+      plan_id: opts.planId,
+      metadata: { user_id: opts.userId, purchase_id: opts.purchaseId, product_key: opts.productKey },
       ...(opts.redirectUrl ? { redirect_url: opts.redirectUrl } : {}),
     }),
   }) as { id: string; purchase_url: string };

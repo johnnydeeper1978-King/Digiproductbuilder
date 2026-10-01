@@ -7,6 +7,8 @@ const expected = [
   "/marketplace", "/workforce", "/book-a-call", "/login", "/get-started",
   "/dashboard", "/products", "/products/:productId", "/products/:productId/builder",
   "/ai-guide", "/content", "/tools", "/affiliate", "/settings", "*",
+  "/marketplace/:key", "/library", "/library/:key", "/library/:key/tools/:resourceKey", "/library/:key/os",
+  "/learn/:lessonId", "/terms", "/privacy", "/contact",
 ];
 const missing = expected.filter((p) => !found.includes(p));
 console.log(`  routes found: ${found.length}`);

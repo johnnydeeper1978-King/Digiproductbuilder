@@ -7,31 +7,32 @@ export function SiteFooter() {
         <div className="footer-grid">
           <div>
             <div className="logo">369°<sup>DEGREES</sup></div>
-            <p style={{ maxWidth: 270, lineHeight: 1.6, fontSize: 13 }}>Discover. Build. Launch. Sell. Scale. Automate.</p>
+            <p style={{ maxWidth: 280, lineHeight: 1.6, fontSize: 13 }}>Find a digital product that fits you — or use a ready-made system. Discover. Build. Launch. Sell.</p>
           </div>
           <div>
-            <h4>PLATFORM</h4>
-            <Link to="/how-it-works">How It Works</Link>
-            <Link to="/discover">Discover Your Product</Link>
-            <Link to="/builder">Digital Product Builder</Link>
-            <Link to="/workforce">AI Workforce</Link>
-          </div>
-          <div>
-            <h4>EARN</h4>
+            <h4>START</h4>
+            <Link to="/discover">Free Product Discovery</Link>
             <Link to="/marketplace">Marketplace</Link>
-            <Link to="/marketplace">Sell Your Product</Link>
-            <Link to="/get-started">Affiliate Program</Link>
+            <Link to="/builder">Product Builder</Link>
+            <Link to="/how-it-works">How It Works</Link>
           </div>
           <div>
-            <h4>LEARN</h4>
-            <Link to="/how-it-works">How It Works</Link>
+            <h4>ACCOUNT</h4>
+            <Link to="/library">My Library</Link>
+            <Link to="/login">Log In</Link>
+            <Link to="/login?mode=signup">Create Account</Link>
+          </div>
+          <div>
+            <h4>HELP</h4>
+            <Link to="/contact">Contact & Support</Link>
             <Link to="/book-a-call">Book a Call</Link>
-            <Link to="/get-started">Get Started</Link>
+            <Link to="/terms">Terms</Link>
+            <Link to="/privacy">Privacy (POPIA)</Link>
           </div>
         </div>
         <div className="footer-bottom">
           <span>© {new Date().getFullYear()} 369 Degrees. All rights reserved.</span>
-          <span>Privacy · Terms · Cookies</span>
+          <span><Link to="/privacy">Privacy</Link> · <Link to="/terms">Terms</Link> · <Link to="/contact">Contact</Link></span>
         </div>
       </div>
     </footer>

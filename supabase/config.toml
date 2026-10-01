@@ -4,3 +4,6 @@ project_id = "unsdlslapjpzyjoghhen"
 # which authenticates by Whop signature instead.
 [functions.whop-webhook]
 verify_jwt = false
+
+[functions.product-access]
+verify_jwt = true

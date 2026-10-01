@@ -6,7 +6,7 @@ export function WorkforcePage() {
       seoDescription="A coordinated team of AI specialists to help run your digital product business."
       what="A future team of ~30 AI specialists coordinated by an AI CEO to run research, content, marketing and support."
       why="It's the long-term promise: automate the busywork so the business can run with less of your time."
-      next="The offer and application flow are a foundation for launch; autonomous agents are added progressively."
+      next="The AI Workforce is a future premium offer and isn't available yet. Start with free Product Discovery or a ready-made system today."
       status="Coming soon"
     />
   );

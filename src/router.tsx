@@ -9,10 +9,17 @@ import { DiscoverPage } from "@/pages/public/DiscoverPage";
 import { DiscoverResultsPage } from "@/pages/public/DiscoverResultsPage";
 import { BlueprintPage } from "@/pages/public/BlueprintPage";
 import { BuilderPage } from "@/pages/public/BuilderPage";
-import { MarketplacePage } from "@/pages/public/MarketplacePage";
 import { WorkforcePage } from "@/pages/public/WorkforcePage";
 import { BookACallPage } from "@/pages/public/BookACallPage";
-import { LoginPage } from "@/pages/public/LoginPage";
+import { MarketplacePage } from "@/pages/market/MarketplacePage";
+import { ProductPage } from "@/pages/market/ProductPage";
+import { LibraryPage } from "@/pages/market/LibraryPage";
+import { ProductDashboardPage } from "@/pages/market/ProductDashboardPage";
+import { LessonPage } from "@/pages/market/LessonPage";
+import { ResourcePage } from "@/pages/market/ResourcePage";
+import { OsPage } from "@/pages/market/OsPage";
+import { LoginPage } from "@/pages/market/LoginPage";
+import { TermsPage, PrivacyPage, ContactPage } from "@/pages/market/LegalPages";
 import { GetStartedPage } from "@/pages/public/GetStartedPage";
 
 import { DashboardPage } from "@/pages/app/DashboardPage";
@@ -34,6 +41,19 @@ export function AppRouter() {
       <Route element={<MarketingLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/how-it-works" element={<HowItWorksPage />} />
+        {/* Marketplace + product system */}
+        <Route path="/marketplace" element={<MarketplacePage />} />
+        <Route path="/marketplace/:key" element={<ProductPage />} />
+        <Route path="/library" element={<LibraryPage />} />
+        <Route path="/library/:key" element={<ProductDashboardPage />} />
+        <Route path="/library/:key/tools/:resourceKey" element={<ResourcePage />} />
+        <Route path="/library/:key/os" element={<OsPage />} />
+        <Route path="/learn/:lessonId" element={<LessonPage />} />
+        {/* Account + legal */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/contact" element={<ContactPage />} />
       </Route>
 
       {/* Public app experiences (dark) */}
@@ -42,10 +62,8 @@ export function AppRouter() {
         <Route path="/discover/results" element={<DiscoverResultsPage />} />
         <Route path="/blueprint" element={<BlueprintPage />} />
         <Route path="/builder" element={<BuilderPage />} />
-        <Route path="/marketplace" element={<MarketplacePage />} />
         <Route path="/workforce" element={<WorkforcePage />} />
         <Route path="/book-a-call" element={<BookACallPage />} />
-        <Route path="/login" element={<LoginPage />} />
         <Route path="/get-started" element={<GetStartedPage />} />
       </Route>
 

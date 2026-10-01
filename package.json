@@ -12,13 +12,16 @@
     "test:schema": "node tests/schema.test.mjs",
     "test:routes": "node tests/routes.test.mjs",
     "test:logic": "node tests/logic.test.mjs",
-    "test:node": "npm run test:schema && npm run test:routes && npm run test:logic",
+    "test:node": "npm run test:schema && npm run test:routes && npm run test:logic && npm run test:catalog",
     "test:db": "python3 tests/db/foundation.py && python3 tests/db/discovery.py && python3 tests/db/blueprint_paywall.py && python3 tests/db/builder.py",
     "secret-scan": "bash scripts/secret-scan.sh",
     "verify": "tsc --noEmit && npm run build && npm run test:node && npm run secret-scan",
     "db:push": "supabase db push",
-    "functions:deploy": "supabase functions deploy discovery discovery-analyze blueprint-generate builder stripe-checkout stripe-webhook",
-    "deploy": "bash scripts/deploy.sh"
+    "functions:deploy": "supabase functions deploy discovery discovery-interview discovery-analyze blueprint-generate builder whop-checkout whop-webhook product-access",
+    "deploy": "bash scripts/deploy.sh",
+    "test:catalog": "node tests/catalog.test.mjs",
+    "test:e2e": "node tests/e2e/marketplace.e2e.mjs",
+    "seed:products": "python3 scripts/seed-products.py"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",

@@ -18,6 +18,17 @@ import type { Blueprint } from "@/types/schemas/blueprint";
 import type { AnswerValue } from "@/features/discovery/types";
 
 export interface SessionRef { id: string; anonToken: string | null; }
+
+export interface InterviewAnswer { choice?: string | string[]; other?: string; text?: string; }
+export interface InterviewQuestion {
+  key: string; section: number; sectionTitle: string; sectionIntro: string; text: string; why: string | null;
+  type: "single" | "multi" | "text"; options: { value: string; label: string }[]; allowOther: boolean;
+  required: boolean; source: "bank" | "ai_followup"; previous: InterviewAnswer | null;
+}
+export interface InterviewStep {
+  step: { kind: "question"; question: InterviewQuestion } | { kind: "done" };
+  progress: { answered: number; total: number; percent: number };
+}
 export interface AnswerInput {
   question_key: string; question_text?: string; answer: AnswerValue; sequence?: number;
 }
@@ -125,6 +136,18 @@ export const discoveryService = {
     const body = ref.anonToken ? { anonToken: ref.anonToken } : { sessionId: ref.id };
     const { output } = await callEdge<{ output: DiscoveryOutput }>("discovery-analyze", body);
     return output;
+  },
+
+  /** Structured interview: get the next question (or done). Server decides order. */
+  async interviewNext(ref: SessionRef): Promise<InterviewStep> {
+    const body = ref.anonToken ? { anonToken: ref.anonToken } : { sessionId: ref.id };
+    return callEdge("discovery-interview", { action: "next", ...body });
+  },
+
+  /** Structured interview: save one answer and get the next step. */
+  async interviewAnswer(ref: SessionRef, key: string, answer: InterviewAnswer): Promise<InterviewStep> {
+    const body = ref.anonToken ? { anonToken: ref.anonToken } : { sessionId: ref.id };
+    return callEdge("discovery-interview", { action: "answer", key, answer, ...body });
   },
 
   /** After sign-up: link an anonymous session to the authenticated user. */

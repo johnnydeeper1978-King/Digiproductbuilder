@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/Badge";
  * never simulates functionality.
  */
 export function PlaceholderPage({
-  title, seoDescription, what, why, next, status = "Foundation",
+  title, seoDescription, what, why, next, status = "Coming soon",
 }: {
   title: string;
   seoDescription?: string;

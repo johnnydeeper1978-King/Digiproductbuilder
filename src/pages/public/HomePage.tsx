@@ -1,5 +1,21 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Seo } from "@/components/seo/Seo";
+import { catalogService } from "@/services/catalogService";
+import { ProductCard } from "@/features/catalog/components";
+import type { CatalogProduct } from "@/features/catalog/types";
+
+/** Live catalogue — no example listings or invented prices. */
+function LiveProducts() {
+  const [items, setItems] = useState<CatalogProduct[]>([]);
+  useEffect(() => {
+    catalogService.catalog()
+      .then((p) => setItems([...p.filter((x) => x.status === "live"), ...p.filter((x) => x.status !== "live")].slice(0, 3)))
+      .catch(() => setItems([]));
+  }, []);
+  if (!items.length) return null;
+  return <div className="mk-grid mk-grid-home">{items.map((p) => <ProductCard key={p.key} p={p} />)}</div>;
+}
 
 const START_CARDS: [string, string, string, boolean][] = [
   ["01", "What I Know", "Turn existing knowledge or experience into a product opportunity.", true],
@@ -38,10 +54,11 @@ const JOURNEY: [string, string, string][] = [
 
 const FAQS: [string, string][] = [
   ["Do I need any technical skills?", "No. The platform guides you through each step and does the heavy lifting. If you can answer questions about yourself, you can use it."],
-  ["How much does it cost?", "Discovery is completely free. The Digital Product Builder is a one-time $47 and lets you create up to 3 product projects. The AI Workforce is a separate future premium offer."],
+  ["How much does it cost?", "Product Discovery is free. Marketplace systems are one-time purchases shown on each product page (from $19). The Digital Product Builder is a one-time $47. The AI Workforce is a future premium offer."],
+  ["What's the difference between Discovery and the Marketplace?", "Discovery helps you find and plan a product of your own to create and sell. The Marketplace sells finished systems you can use straight away. Many people do both."],
   ["What kind of products can I create?", "Digital products — ebooks and guides, templates, toolkits, spreadsheets, checklists, Notion systems, courses and more — matched to your skills, interests and audience."],
   ["How long does it take to see results?", "Discovery takes a few minutes. Building depends on your product and the time you put in — the Builder always shows you one clear next action, so you're never stuck."],
-  ["Is there a money-back guarantee?", "Discovery is free, so you can see the direction and value before you pay anything. Refunds on the $47 Builder follow our checkout provider's policy at the time of purchase."],
+  ["Can I get a refund?", "Discovery is free, and most systems have a free preview lesson, so you can see the value before you pay. Because paid digital content is available immediately, purchases are final, as set out in our Terms. If anything isn't working, contact us and we'll help."],
 ];
 
 export function HomePage() {
@@ -50,32 +67,29 @@ export function HomePage() {
       <Seo title="369 Degrees — the AI-powered platform to discover, build & sell your digital product"
         description="Discover your best digital product opportunity, build it step by step, launch it, sell it and scale it with an AI workforce." />
 
-      {/* 1. Dark AI-platform hero */}
+      {/* 1. Hero — two equal entry paths */}
       <section className="hero-dark">
-        <div className="container hero-grid">
-          <div>
-            <div className="eyebrow">THE AI-POWERED DIGITAL PRODUCT PLATFORM</div>
-            <h1>Discover, build and sell your <em>digital product</em> — end to end.</h1>
-            <p className="lead">369 Degrees helps you find your best digital product opportunity, build it step by step, launch it, sell it and eventually scale it with an AI workforce.</p>
-            <div className="hero-ctas">
-              <Link className="btn primary" to="/discover">Start Free Discovery →</Link>
-              <Link className="btn outline" style={{ color: "#fff", borderColor: "#33486a" }} to="/how-it-works">See How It Works</Link>
-            </div>
-            <div className="checks">
-              <span>AI-guided</span><span>No technical skills needed</span><span>Complete step-by-step system</span>
-            </div>
+        <div className="container">
+          <div className="hero-dual-head">
+            <div className="eyebrow">THE DIGITAL PRODUCT PLATFORM</div>
+            <h1>Find the digital product that fits you — <em>or start with one that's already built.</em></h1>
+            <p className="lead">Two ways in. Discover and build your own product with a free AI-guided interview, or pick a ready-made system from the Marketplace and start using it today.</p>
           </div>
-          <div className="hv">
-            <div className="hv-top"><span>YOUR PRODUCT JOURNEY</span><span className="hv-tag">EXAMPLE</span></div>
-            <h4>AI Content Toolkit</h4>
-            <p className="hv-sub">A product direction generated from Discovery</p>
-            <div className="hv-bar"><i style={{ width: "42%" }} /></div>
-            <div className="hv-step done"><span className="d" />Opportunity found</div>
-            <div className="hv-step done"><span className="d" />Market research</div>
-            <div className="hv-step done"><span className="d" />Audience defined</div>
-            <div className="hv-step cur"><span className="d" />Offer creation</div>
-            <div className="hv-step"><span className="d" />Product creation</div>
-            <div className="hv-focus"><small>CURRENT FOCUS</small><strong>Create your core offer</strong></div>
+          <div className="dual-paths">
+            <Link className="dual-card" to="/discover">
+              <span className="dual-tag">FREE · ABOUT 15 MINUTES</span>
+              <h2>Not sure what to build?</h2>
+              <p>Answer a guided interview about your skills, interests, time and the people you can help. Get personalised product opportunities and a free Product Guide for the one you choose.</p>
+              <ul><li>~30 structured questions + AI follow-ups</li><li>Opportunities matched to you, with reasoning</li><li>Free Product Guide + 2–3 alternative directions</li></ul>
+              <span className="btn primary">Discover Your Product →</span>
+            </Link>
+            <Link className="dual-card" to="/marketplace">
+              <span className="dual-tag">READY-MADE SYSTEMS · FROM $19</span>
+              <h2>Already know what you need?</h2>
+              <p>Practical systems you work through and keep using — guided lessons, interactive worksheets and trackers, saved progress, and a finished system at the end.</p>
+              <ul><li>Productivity, budgeting, marketing and launch systems</li><li>Interactive tools, not PDFs</li><li>Instant access in your library</li></ul>
+              <span className="btn primary">Explore Marketplace →</span>
+            </Link>
           </div>
         </div>
       </section>
@@ -267,15 +281,10 @@ export function HomePage() {
         <div className="container">
           <div className="section-head">
             <div className="eyebrow">THE 369 MARKETPLACE</div>
-            <h2>Build your own product. Or earn by selling someone else's.</h2>
-            <p>Discover products, sell your own products and participate in the marketplace ecosystem.</p>
+            <h2>Ready-made systems you actually use.</h2>
+            <p>Each system walks you through short guided modules with interactive tools, saves your progress and ends with a finished system built around you.</p>
           </div>
-          <div className="market-tabs"><button className="tab active">Explore Products</button><button className="tab">Sell Your Product</button><button className="tab">Promote &amp; Earn</button></div>
-          <div className="products">
-            <div className="product"><div className="cover">AI CONTENT<br />TOOLKIT</div><div className="product-body"><span className="badge">EXAMPLE LISTING</span><h3>AI Content Toolkit</h3><div className="meta"><span>Templates + Guide</span><b>$49</b></div></div></div>
-            <div className="product"><div className="cover">CREATOR<br />LAUNCH SYSTEM</div><div className="product-body"><span className="badge">EXAMPLE LISTING</span><h3>Creator Launch System</h3><div className="meta"><span>Course + Workbook</span><b>$79</b></div></div></div>
-            <div className="product"><div className="cover">DIGITAL PRODUCT<br />STARTER KIT</div><div className="product-body"><span className="badge">AFFILIATE AVAILABLE · EXAMPLE</span><h3>Digital Product Starter Kit</h3><div className="meta"><span>Templates</span><b>$29</b></div></div></div>
-          </div>
+          <LiveProducts />
           <div style={{ textAlign: "center", marginTop: 32 }}><Link className="btn dark" to="/marketplace">Explore the Marketplace →</Link></div>
         </div>
       </section>

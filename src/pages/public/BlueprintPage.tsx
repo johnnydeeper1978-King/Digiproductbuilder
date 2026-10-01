@@ -11,7 +11,7 @@ import type { Blueprint } from "@/types/schemas/blueprint";
 
 export function BlueprintPage() {
   const location = useLocation();
-  const passed = (location.state as { blueprint?: Blueprint; sessionId?: string } | null) ?? null;
+  const passed = (location.state as { blueprint?: Blueprint; sessionId?: string } | null) ?? storedBlueprint();
   const [bp, setBp] = useState<Blueprint | null>(passed?.blueprint ?? null);
   const [loading, setLoading] = useState(!passed?.blueprint && Boolean(passed?.sessionId));
 
@@ -44,6 +44,9 @@ export function BlueprintPage() {
 
         {!loading && bp && (
           <>
+            {(bp as unknown as GuideExtrasData).summary && (
+              <Card style={{ marginTop: "var(--space-4)" }}><p style={{ margin: 0, fontSize: "1.05rem" }}>{(bp as unknown as GuideExtrasData).summary}</p></Card>
+            )}
             <Section title="What this product is">
               <h3 style={{ margin: "0 0 4px" }}>{bp.product?.name}</h3>
               <p className="muted">{bp.product?.concept}</p>
@@ -110,6 +113,8 @@ export function BlueprintPage() {
               </Section>
             ) : null}
 
+            <GuideExtras bp={bp as unknown as GuideExtrasData} />
+
             <Card style={{ marginTop: "var(--space-8)" }}>
               <span className="eyebrow">Next step</span>
               <h3 style={{ marginTop: 6 }}>Build it in the $47 Builder</h3>
@@ -120,6 +125,70 @@ export function BlueprintPage() {
         )}
       </div>
     </Container>
+  );
+}
+
+function storedBlueprint(): { blueprint?: Blueprint; sessionId?: string } | null {
+  try { return JSON.parse(sessionStorage.getItem("369d.discovery.blueprint") ?? "null"); } catch { return null; }
+}
+
+/* Newer Guide sections (summary, creation, 30-day marketing, first customers,
+   alternative opportunities) — all optional in the schema, rendered defensively. */
+interface GuideExtrasData {
+  summary?: string;
+  creation?: { outline?: { step: string; description?: string }[]; effort?: string };
+  marketingPlan?: { first30Days?: { week: string; focus: string; actions?: string[] }[]; contentIdeas?: string[] };
+  firstCustomers?: { whereToFind?: string[]; plan?: string[] };
+  builderPreview?: string;
+  alternativeOpportunities?: { name: string; targetBuyer: string; whyItCouldPay: string; priceHypothesis?: string; fitForYou?: string; format?: string }[];
+}
+
+function GuideExtras({ bp }: { bp: GuideExtrasData }) {
+  return (
+    <>
+      {bp.creation && (bp.creation.outline?.length || bp.creation.effort) ? (
+        <Section title="What creating it involves">
+          {bp.creation.outline?.length ? (
+            <ol className="launch-seq">{bp.creation.outline.map((x, i) => <li key={i}><strong>{x.step}</strong>{x.description && <> — <span className="muted">{x.description}</span></>}</li>)}</ol>
+          ) : null}
+          {bp.creation.effort && <Meta label="Realistic effort" value={bp.creation.effort} />}
+        </Section>
+      ) : null}
+      {bp.marketingPlan?.first30Days?.length ? (
+        <Section title="Your first 30 days of marketing">
+          {bp.marketingPlan.first30Days.map((w, i) => (
+            <div key={i} style={{ marginBottom: 10 }}>
+              <strong>{w.week}: {w.focus}</strong>
+              {w.actions?.length ? <ul className="check-list">{w.actions.map((a, j) => <li key={j}>{a}</li>)}</ul> : null}
+            </div>
+          ))}
+          {bp.marketingPlan.contentIdeas?.length ? <Meta label="Starter content ideas" value={bp.marketingPlan.contentIdeas.join(" · ")} /> : null}
+        </Section>
+      ) : null}
+      {bp.firstCustomers && (bp.firstCustomers.whereToFind?.length || bp.firstCustomers.plan?.length) ? (
+        <Section title="Finding your first customers">
+          {bp.firstCustomers.whereToFind?.length ? <Meta label="Where to find them" value={bp.firstCustomers.whereToFind.join(" · ")} /> : null}
+          {bp.firstCustomers.plan?.length ? <ol className="launch-seq">{bp.firstCustomers.plan.map((x, i) => <li key={i}>{x}</li>)}</ol> : null}
+        </Section>
+      ) : null}
+      {bp.alternativeOpportunities?.length ? (
+        <Section title="Other directions worth considering">
+          {bp.alternativeOpportunities.map((a, i) => (
+            <div key={i} style={{ marginBottom: 12 }}>
+              <strong>{a.name}</strong> <span className="muted">— for {a.targetBuyer}</span>
+              <p className="muted" style={{ margin: "4px 0" }}>{a.whyItCouldPay}{a.priceHypothesis ? ` Price idea: ${a.priceHypothesis}.` : ""}</p>
+              {a.fitForYou && <p className="dim" style={{ margin: 0, fontSize: "0.85rem" }}>Why it fits you: {a.fitForYou}</p>}
+            </div>
+          ))}
+          <p className="dim" style={{ fontSize: "0.8rem" }}>Profit potential is a hypothesis to test, never a promise.</p>
+        </Section>
+      ) : null}
+      {bp.builderPreview && (
+        <Section title="What the Builder would walk you through">
+          <p className="muted">{bp.builderPreview}</p>
+        </Section>
+      )}
+    </>
   );
 }
 

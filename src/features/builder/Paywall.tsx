@@ -4,12 +4,15 @@ import { Card } from "@/components/ui/Card";
 import { ButtonLink } from "@/components/ui/Button";
 import { authService } from "@/services/authService";
 import { env } from "@/config/env";
+import { catalogService } from "@/services/catalogService";
 
 /** The $47 Builder upgrade boundary. Checkout is hosted on Whop; access is
  *  granted server-side once payment is confirmed (never by the browser). */
 export function Paywall({ context }: { context?: "blueprint" | "direct" }) {
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [email, setEmail] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -44,14 +47,23 @@ export function Paywall({ context }: { context?: "blueprint" | "direct" }) {
 
       {authed === false ? (
         <div className="row" style={{ marginTop: "var(--space-4)" }}>
-          <ButtonLink to="/login">Sign in to continue</ButtonLink>
+          <ButtonLink to="/login?next=%2Fbuilder">Sign in to continue</ButtonLink>
           <Link to="/discover" className="muted" style={{ alignSelf: "center" }}>or try free Discovery first</Link>
         </div>
       ) : (
         <div style={{ marginTop: "var(--space-4)" }}>
-          <a className="btn btn-primary" href={env.whopBuilderUrl} target="_blank" rel="noopener noreferrer">
-            Get the Builder — $47
-          </a>
+          <button className="btn btn-primary" disabled={busy} onClick={async () => {
+            setBusy(true); setErr(null);
+            try {
+              const r = await catalogService.checkout("builder");
+              if (r.alreadyOwned) { window.location.assign("/builder"); return; }
+              window.location.assign(r.url ?? env.whopBuilderUrl);
+            } catch { window.location.assign(env.whopBuilderUrl); }
+            finally { setBusy(false); }
+          }}>
+            {busy ? "Opening secure checkout…" : "Get the Builder — $47"}
+          </button>
+          {err && <p className="d-field-error">{err}</p>}
           <p className="dim" style={{ fontSize: "0.8rem", marginTop: 10 }}>
             Secure checkout is handled by Whop. Please pay with{email ? <> the same email you signed up with (<strong>{email}</strong>)</> : " the same email you signed up with"} so we can unlock your access. It activates shortly after payment — refresh this page.
           </p>

@@ -1,18 +1,23 @@
 // Edge Function: `whop-checkout`
-// A signed-in user starts the $47 Builder purchase. Creates a PENDING purchases
-// row and a Whop checkout whose metadata carries the user + purchase ids, then
-// returns the checkout URL. Access is NOT granted here — only the verified
-// webhook marks a purchase 'paid'.
+// A signed-in user starts a purchase of any LIVE catalog product (Builder or a
+// Marketplace system). Body: { productKey?: string = "builder" }.
+// Creates a PENDING purchases row and a Whop checkout whose metadata carries the
+// user + purchase + product ids, then returns the checkout URL. Access is NOT
+// granted here — only the verified webhook marks a purchase 'paid'.
 import { corsHeaders, json } from "../_shared/cors.ts";
 import { getAdminClient, getCallerUid } from "../_shared/supabaseAdmin.ts";
-import { createBuilderCheckout, WhopNotConfiguredError } from "../_shared/whop.ts";
+import { createCheckout, resolvePlanId, WhopNotConfiguredError } from "../_shared/whop.ts";
 
-function safeRedirect(appUrl: string | null): string | undefined {
+const KEY = /^[a-z0-9-]{2,40}$/;
+
+function safeRedirect(appUrl: string | null, productKey: string): string | undefined {
   if (!appUrl) return undefined;
   try {
     const u = new URL(appUrl);
     if (u.protocol !== "https:" && u.hostname !== "localhost") return undefined;
-    return `${u.origin}/builder?checkout=success`;
+    return productKey === "builder"
+      ? `${u.origin}/builder?checkout=success`
+      : `${u.origin}/library/${productKey}?checkout=success`;
   } catch { return undefined; }
 }
 
@@ -25,18 +30,26 @@ Deno.serve(async (req) => {
 
   let body: Record<string, unknown> = {};
   try { body = await req.json(); } catch { /* optional body */ }
+  const productKey = typeof body.productKey === "string" ? body.productKey : "builder";
+  if (!KEY.test(productKey)) return json({ error: "invalid_product" }, 400);
 
   let admin;
   try { admin = getAdminClient(); }
   catch (e) { return json({ error: "not_configured", message: String((e as Error).message) }, 501); }
 
+  const { data: product } = await admin.from("catalog_products")
+    .select("key, status, whop_product_id, whop_plan_id").eq("key", productKey).maybeSingle();
+  if (!product) return json({ error: "invalid_product" }, 404);
+  if (product.status !== "live") return json({ error: "not_on_sale", status: product.status }, 409);
+  if (!product.whop_product_id) return json({ error: "payments_not_configured", message: "No Whop product linked." }, 501);
+
   // Already entitled? Don't charge again.
   const { data: paid } = await admin.from("purchases").select("id")
-    .eq("user_id", uid).eq("product_key", "builder").eq("status", "paid").limit(1);
+    .eq("user_id", uid).eq("product_key", productKey).eq("status", "paid").limit(1);
   if (paid && paid.length > 0) return json({ alreadyOwned: true });
 
   const { data: purchase, error: pErr } = await admin.from("purchases").insert({
-    user_id: uid, product_key: "builder", status: "pending", provider: "whop",
+    user_id: uid, product_key: productKey, status: "pending", provider: "whop",
   }).select("id").single();
   if (pErr) return json({ error: "db_error", message: pErr.message }, 500);
 
@@ -44,8 +57,10 @@ Deno.serve(async (req) => {
   const appUrl = Deno.env.get("APP_URL") ?? (typeof body.appUrl === "string" ? body.appUrl : null);
 
   try {
-    const checkout = await createBuilderCheckout({
-      userId: uid, purchaseId: purchase.id, redirectUrl: safeRedirect(appUrl),
+    const planId = await resolvePlanId(product.whop_product_id, product.whop_plan_id);
+    const checkout = await createCheckout({
+      planId, userId: uid, purchaseId: purchase.id, productKey,
+      redirectUrl: safeRedirect(appUrl, productKey),
     });
     await admin.from("purchases").update({ whop_checkout_config_id: checkout.id }).eq("id", purchase.id);
     return json({ url: checkout.url });
