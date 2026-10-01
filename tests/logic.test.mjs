@@ -1,8 +1,9 @@
 // Bundles the pure edge modules with esbuild and asserts their behaviour.
 // Run: node tests/logic.test.mjs   (requires devDep: esbuild)
 import { build } from "esbuild";
+import { fileURLToPath } from "node:url";
 async function loadTs(rel) {
-  const res = await build({ entryPoints: [new URL(rel, import.meta.url).pathname],
+  const res = await build({ entryPoints: [fileURLToPath(new URL(rel, import.meta.url))],
     bundle: true, format: "esm", write: false, platform: "node" });
   return import("data:text/javascript;base64," + Buffer.from(res.outputFiles[0].text).toString("base64"));
 }
