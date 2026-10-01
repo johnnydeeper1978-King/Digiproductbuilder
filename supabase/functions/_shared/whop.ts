@@ -14,7 +14,9 @@ export function whopIds() {
 }
 
 function apiKey(): string {
-  const key = Deno.env.get("WHOP_API_KEY");
+  // WHOP_API_KEY is the intended name. The production key was saved under the
+  // name "369 Supabase production"; read that as a fallback until it's renamed.
+  const key = (Deno.env.get("WHOP_API_KEY") ?? Deno.env.get("369 Supabase production"))?.trim();
   if (!key) throw new WhopNotConfiguredError("WHOP_API_KEY is not configured.");
   return key;
 }

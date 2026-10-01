@@ -86,3 +86,7 @@ update public.catalog_products set
   includes = array['12 modules · 37 guided lessons','20 interactive trackers, planners and calculators','Spreadsheet-ready tables with CSV export','7-Day Money Reset','Progress tracking','Your 2026 Money OS builder'],
   updated_at = now()
 where key = 'budgeting-system';
+
+-- Whop products linked 2026-10-01 (looked up from the store by route).
+update public.catalog_products set whop_product_id = 'prod_s2T7wdRqtfXok', whop_plan_id = 'plan_cwAISqu7ntH2l' where key = 'adhd-system';
+update public.catalog_products set whop_product_id = 'prod_Hl569D83c90uA', whop_plan_id = 'plan_n9HWBXnC2SgQJ' where key = 'budgeting-system';
