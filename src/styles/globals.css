@@ -93,7 +93,7 @@ p { margin: 0 0 var(--space-4); color: var(--text-muted); }
 
 /* Nav */
 .nav { position: sticky; top: 0; z-index: 40; backdrop-filter: blur(14px);
-  background: rgba(10, 14, 39, 0.7); border-bottom: 1px solid var(--border); }
+  background: var(--nav-bg); border-bottom: 1px solid var(--border); }
 .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 68px; }
 .brand { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; display: flex; align-items: center; gap: 10px; }
 .brand-mark { width: 30px; height: 30px; border-radius: 9px; background: var(--gradient); display: grid; place-items: center; font-size: 0.7rem; color: white; }
@@ -106,8 +106,8 @@ p { margin: 0 0 var(--space-4); color: var(--text-muted); }
 .footer { border-top: 1px solid var(--border); margin-top: var(--space-24); padding: var(--space-12) 0; color: var(--text-dim); font-size: 0.9rem; }
 
 /* App shell */
-.app-shell { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; }
-.sidebar { border-right: 1px solid var(--border); padding: var(--space-6) var(--space-4); background: var(--navy-950); position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.app-shell { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; background: var(--bg); }
+.sidebar { border-right: 1px solid var(--border); padding: var(--space-6) var(--space-4); background: var(--sidebar-bg); position: sticky; top: 0; height: 100vh; overflow-y: auto; }
 .side-link { display: flex; align-items: center; gap: 10px; padding: 0.55rem 0.75rem; border-radius: var(--radius-sm); color: var(--text-muted); font-size: 0.92rem; font-weight: 500; }
 .side-link:hover { background: var(--surface); color: var(--text); }
 .side-link.active { background: rgba(59,130,246,0.12); color: var(--blue-400); }

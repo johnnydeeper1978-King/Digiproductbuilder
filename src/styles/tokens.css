@@ -59,4 +59,28 @@
   --shadow-glow: 0 0 40px -8px rgba(99, 102, 241, 0.35);
 
   --maxw: 1160px;
+
+  --nav-bg: rgba(10, 14, 39, 0.7);
+  --sidebar-bg: var(--navy-950);
+}
+
+/* Light theme — marketplace, library and purchased-product pages.
+   Same blue/violet accents as the dark app; only neutrals swap to cream. */
+[data-theme="light"] {
+  --bg: #fbfaf7;
+  --bg-elevated: #f7f3ea;
+  --surface: #ffffff;
+  --surface-hover: #f3f1ea;
+  --border: rgba(16, 23, 34, 0.08);
+  --border-strong: rgba(16, 23, 34, 0.16);
+
+  --text: #101722;
+  --text-muted: #536073;
+  --text-dim: #788293;
+
+  --nav-bg: rgba(251, 250, 247, 0.94);
+  --sidebar-bg: #fbfaf7;
+
+  --shadow: 0 20px 60px -20px rgba(16, 23, 34, 0.12);
+  --shadow-glow: 0 0 40px -8px rgba(23, 105, 255, 0.25);
 }
