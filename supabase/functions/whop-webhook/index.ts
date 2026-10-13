@@ -1,115 +1,139 @@
 // Edge Function: `whop-webhook` — AUTHORITATIVE payment confirmation.
-// Verifies the Whop webhook signature, then on a successful payment event
-// marks the matching purchases row 'paid'. This is the ONLY path that grants
-// Builder / Digital Marketing OS access.
-//
-// Whop does not know our Supabase user_id, so the match is by email: the
-// buyer's Whop checkout email must match the email they signed up to the app
-// with (see the note on Paywall.tsx). If no matching auth user exists yet,
-// the purchase is recorded unmatched and reconciled manually — it is never
-// silently dropped.
-import { corsHeaders, json } from "../_shared/cors.ts";
+// Deployed with verify_jwt=false: Whop can't send a Supabase JWT, so the
+// Standard Webhooks signature below is the authentication.
+//   payment.succeeded -> purchase marked 'paid' (the ONLY path to paid access,
+//                        for the Builder and every Marketplace product)
+//   dispute.created   -> purchase marked 'disputed' (access paused)
+// The product is resolved from the Whop product id via catalog_products
+// (metadata is only a fallback). Idempotent on webhook-id.
+import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { getAdminClient } from "../_shared/supabaseAdmin.ts";
+import { verifyWhopSignature, whopIds } from "../_shared/whop.ts";
 
-// Maps a Whop plan ID to our internal product key. Set these once the Whop
-// products exist — WHOP_BUILDER_PLAN_ID is required for the live Builder
-// product; WHOP_DMOS_PLAN_ID is optional until Digital Marketing OS ships.
-function productKeyForPlan(planId: string | undefined): "builder" | "digital-marketing-os" | null {
-  if (!planId) return null;
-  if (planId === Deno.env.get("WHOP_BUILDER_PLAN_ID")) return "builder";
-  if (planId === Deno.env.get("WHOP_DMOS_PLAN_ID")) return "digital-marketing-os";
-  return null;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// deno-lint-ignore no-explicit-any
+type Obj = Record<string, any>;
+
+const text = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : null);
+
+async function logEvent(admin: SupabaseClient, userId: string | null, type: string, payload: Obj) {
+  await admin.from("events").insert({ user_id: userId, type, payload });
 }
 
-async function verifySignature(raw: string, signature: string | null, secret: string): Promise<boolean> {
-  if (!signature) return false;
-  const key = await crypto.subtle.importKey(
-    "raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
-  );
-  const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(raw));
-  const expected = Array.from(new Uint8Array(mac)).map((b) => b.toString(16).padStart(2, "0")).join("");
-  // Whop signs as `sha256=<hex>` — accept either form.
-  const provided = signature.startsWith("sha256=") ? signature.slice(7) : signature;
-  return expected === provided;
+/** Map the paid Whop product to our catalog key. Product id wins over metadata. */
+async function resolveProductKey(admin: SupabaseClient, whopProductId: string | null, meta: Obj): Promise<string | null> {
+  if (whopProductId) {
+    const { data } = await admin.from("catalog_products").select("key").eq("whop_product_id", whopProductId).maybeSingle();
+    if (data) return data.key as string;
+    if (whopProductId === whopIds().builderProductId) return "builder";
+    return null; // a Whop product we don't sell through the platform
+  }
+  const metaKey = text(meta.product_key);
+  if (!metaKey) return null;
+  const { data } = await admin.from("catalog_products").select("key").eq("key", metaKey).maybeSingle();
+  return data ? (data.key as string) : null;
+}
+
+async function handlePayment(admin: SupabaseClient, p: Obj) {
+  const meta: Obj = p.metadata ?? {};
+  const whopProductId = text(p.product?.id) ?? text(p.product_id);
+  const productKey = await resolveProductKey(admin, whopProductId, meta);
+  if (!productKey) {
+    await logEvent(admin, null, "whop_payment_ignored", { payment_id: p.id, product_id: whopProductId });
+    return;
+  }
+
+  const paymentId = text(p.id);
+  if (!paymentId) throw new Error("payment.succeeded without payment id");
+
+  // Retry of an already-fulfilled payment.
+  const { data: done } = await admin.from("purchases").select("id").eq("whop_payment_id", paymentId).limit(1);
+  if (done && done.length > 0) return;
+
+  const email = (text(p.user?.email) ?? text(p.email) ?? text(p.member?.email))?.toLowerCase() ?? null;
+  // Whop amounts are in dollars; purchases.amount is in cents.
+  const total = typeof p.total === "number" ? p.total : typeof p.subtotal === "number" ? p.subtotal : null;
+  const paidFields = {
+    status: "paid",
+    provider: "whop",
+    whop_payment_id: paymentId,
+    whop_membership_id: text(p.membership?.id) ?? text(p.membership_id),
+    buyer_email: email,
+    amount: total === null ? null : Math.round(total * 100),
+    currency: text(p.currency),
+  };
+
+  // 1. Our own checkout: flip the pending row created by whop-checkout
+  //    (only if it is for the same product that was actually paid).
+  if (typeof meta.purchase_id === "string" && UUID.test(meta.purchase_id)) {
+    const { data: updated } = await admin.from("purchases")
+      .update(paidFields).eq("id", meta.purchase_id).eq("product_key", productKey)
+      .neq("status", "paid").select("id, user_id");
+    if (updated && updated.length > 0) {
+      await logEvent(admin, updated[0].user_id, "purchase_completed", { purchase_id: updated[0].id, product_key: productKey, source: "checkout" });
+      return;
+    }
+  }
+
+  // 2. Plain Whop link: match the account by metadata user id, then by email.
+  let userId: string | null = typeof meta.user_id === "string" && UUID.test(meta.user_id) ? meta.user_id : null;
+  if (!userId && email) {
+    const { data } = await admin.rpc("find_user_id_by_email", { p_email: email });
+    userId = (data as string | null) ?? null;
+  }
+
+  // Unmatched buyers get an unclaimed row; they claim it on sign-in with the
+  // same confirmed email (see _shared/entitlements.ts).
+  const { data: inserted, error } = await admin.from("purchases")
+    .insert({ user_id: userId, product_key: productKey, ...paidFields }).select("id").single();
+  if (error && error.code !== "23505") throw new Error(error.message);
+  await logEvent(admin, userId, "purchase_completed", {
+    purchase_id: inserted?.id ?? null, product_key: productKey, source: userId ? "link_matched" : "link_unclaimed",
+  });
+}
+
+async function handleDispute(admin: SupabaseClient, d: Obj) {
+  const paymentId = text(d.payment?.id) ?? text(d.payment_id);
+  if (!paymentId) return;
+  const { data } = await admin.from("purchases")
+    .update({ status: "disputed" }).eq("whop_payment_id", paymentId).select("id, user_id");
+  await logEvent(admin, data?.[0]?.user_id ?? null, "purchase_disputed", { payment_id: paymentId, dispute_id: d.id ?? null });
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
+  if (req.method !== "POST") return new Response("method_not_allowed", { status: 405 });
 
   const secret = Deno.env.get("WHOP_WEBHOOK_SECRET");
-  if (!secret) return json({ error: "not_configured", message: "WHOP_WEBHOOK_SECRET is not configured." }, 501);
+  if (!secret) return new Response("WHOP_WEBHOOK_SECRET is not configured", { status: 501 });
 
-  const raw = await req.text();
-  const sig = req.headers.get("x-whop-signature") ?? req.headers.get("whop-signature");
-  if (!(await verifySignature(raw, sig, secret))) {
-    return json({ error: "invalid_signature" }, 400);
+  const raw = await req.text(); // raw bytes: parsing first would break the signature
+  if (!(await verifyWhopSignature(raw, req.headers, secret))) {
+    return new Response("invalid signature", { status: 401 });
   }
 
-  let event: {
-    action?: string;
-    data?: {
-      id?: string;
-      plan_id?: string;
-      email?: string;
-      user?: { email?: string };
-      final_amount?: number;
-      currency?: string;
-      membership_id?: string;
-      receipt_id?: string;
-    };
-  };
-  try { event = JSON.parse(raw); } catch { return json({ error: "invalid_payload" }, 400); }
-
-  // Whop's successful-payment events: "payment.succeeded" (one-time) or
-  // "membership.went_valid" (access granted). VERIFY BEFORE LAUNCH against
-  // the current Whop webhook docs/dashboard — event names/shapes do change.
-  const action = event.action ?? "";
-  if (action !== "payment.succeeded" && action !== "membership.went_valid") {
-    return json({ received: true, ignored: action });
-  }
-
-  const d = event.data ?? {};
-  const productKey = productKeyForPlan(d.plan_id);
-  const buyerEmail = (d.email ?? d.user?.email ?? "").trim().toLowerCase();
-
-  if (!productKey || !buyerEmail) {
-    return json({ received: true, unmatched: true, reason: "missing product_key or buyer email" });
-  }
+  let event: Obj;
+  try { event = JSON.parse(raw); } catch { return new Response("invalid json", { status: 400 }); }
 
   const admin = getAdminClient();
+  const webhookId = req.headers.get("webhook-id")!;
 
-  // Resolve the Supabase auth user by email. If they haven't signed up yet,
-  // record nothing destructive — just report unmatched so it can be
-  // reconciled once they do (their next successful sign-in + support ping).
-  const { data: usersPage, error: lookupErr } = await admin.auth.admin.listUsers({ perPage: 200 });
-  if (lookupErr) return json({ error: "lookup_failed", message: lookupErr.message }, 500);
-  const matchedUser = usersPage.users.find((u) => (u.email ?? "").toLowerCase() === buyerEmail);
-
-  if (!matchedUser) {
-    await admin.from("events").insert({
-      type: "purchase_unmatched",
-      payload: { product_key: productKey, email: buyerEmail, whop_membership_id: d.membership_id ?? d.id ?? null },
-    });
-    return json({ received: true, unmatched: true });
+  const { error: dupErr } = await admin.from("webhook_events")
+    .insert({ id: webhookId, provider: "whop", type: String(event.type ?? "") });
+  if (dupErr) {
+    if (dupErr.code === "23505") return new Response("duplicate", { status: 200 });
+    return new Response("db error", { status: 500 });
   }
 
-  await admin.from("purchases").upsert({
-    user_id: matchedUser.id,
-    product_key: productKey,
-    status: "paid",
-    provider: "whop",
-    amount: d.final_amount ?? null,
-    currency: d.currency ?? null,
-    whop_membership_id: d.membership_id ?? d.id ?? null,
-    whop_receipt_id: d.receipt_id ?? null,
-  }, { onConflict: "user_id,product_key" });
-
-  await admin.from("events").insert({
-    user_id: matchedUser.id,
-    type: "purchase_completed",
-    payload: { product_key: productKey, provider: "whop" },
-  });
+  try {
+    if (event.type === "payment.succeeded") await handlePayment(admin, event.data ?? {});
+    else if (event.type === "dispute.created") await handleDispute(admin, event.data ?? {});
+  } catch (e) {
+    // Release the idempotency key so Whop's retry can process it.
+    await admin.from("webhook_events").delete().eq("id", webhookId);
+    console.error("whop-webhook failed", (e as Error).message);
+    return new Response("processing error", { status: 500 });
+  }
 
   return new Response(JSON.stringify({ received: true }), {
     status: 200, headers: { "Content-Type": "application/json" },

@@ -5,14 +5,15 @@ import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { ButtonLink } from "@/components/ui/Button";
 import { authService } from "@/services/authService";
-import { env } from "@/config/env";
+import { checkoutService, CheckoutError } from "@/services/checkoutService";
 import { DMOS_PRODUCT, DMOS_MODULES } from "@/data/digitalMarketingOS";
 
 /** Public sales page for Digital Marketing OS — /marketplace/digital-marketing-os. */
 export function DigitalMarketingOSPage() {
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [email, setEmail] = useState<string | null>(null);
-  const checkoutReady = Boolean(env.whopDmosUrl);
+  const [starting, setStarting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -23,6 +24,18 @@ export function DigitalMarketingOSPage() {
     }).catch(() => active && setAuthed(false));
     return () => { active = false; };
   }, []);
+
+  async function handleCheckout() {
+    setStarting(true);
+    setError(null);
+    try {
+      const url = await checkoutService.startCheckout("digital-marketing-os");
+      window.location.href = url;
+    } catch (e) {
+      setError(e instanceof CheckoutError ? e.message : "Couldn't start checkout. Please try again.");
+      setStarting(false);
+    }
+  }
 
   return (
     <Container>
@@ -44,21 +57,18 @@ export function DigitalMarketingOSPage() {
             <li>Every claim sourced, every stale-prone fact flagged "verify before publishing"</li>
           </ul>
 
-          {!checkoutReady ? (
-            <p className="d-notice" style={{ marginTop: "var(--space-4)" }}>
-              Checkout isn't live yet — the Whop product for Digital Marketing OS hasn't been set up.
-            </p>
-          ) : authed === false ? (
+          {authed === false ? (
             <div className="row" style={{ marginTop: "var(--space-4)" }}>
               <ButtonLink to="/login">Sign in to continue</ButtonLink>
             </div>
           ) : (
             <div style={{ marginTop: "var(--space-4)" }}>
-              <a className="btn btn-primary" href={env.whopDmosUrl} target="_blank" rel="noopener noreferrer">
-                Get Digital Marketing OS — ${DMOS_PRODUCT.price}
-              </a>
+              <button className="btn btn-primary" onClick={handleCheckout} disabled={starting}>
+                {starting ? "Starting checkout…" : `Get Digital Marketing OS — $${DMOS_PRODUCT.price}`}
+              </button>
+              {error && <p className="d-notice" style={{ marginTop: 10 }}>{error}</p>}
               <p className="dim" style={{ fontSize: "0.8rem", marginTop: 10 }}>
-                Secure checkout is handled by Whop. Please pay with{email ? <> the same email you signed up with (<strong>{email}</strong>)</> : " the same email you signed up with"} so we can unlock your access.
+                Secure checkout is handled by Whop, tied to your account ({email ?? "signed-in email"}).
               </p>
             </div>
           )}

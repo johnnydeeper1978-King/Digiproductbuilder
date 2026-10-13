@@ -17,7 +17,7 @@
     "secret-scan": "bash scripts/secret-scan.sh",
     "verify": "tsc --noEmit && npm run build && npm run test:node && npm run secret-scan",
     "db:push": "supabase db push",
-    "functions:deploy": "supabase functions deploy discovery discovery-analyze blueprint-generate builder whop-webhook",
+    "functions:deploy": "supabase functions deploy discovery discovery-analyze blueprint-generate builder whop-webhook whop-checkout product-access",
     "deploy": "bash scripts/deploy.sh"
   },
   "dependencies": {

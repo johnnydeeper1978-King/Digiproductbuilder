@@ -3,13 +3,16 @@ import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/Card";
 import { ButtonLink } from "@/components/ui/Button";
 import { authService } from "@/services/authService";
-import { env } from "@/config/env";
+import { checkoutService, CheckoutError } from "@/services/checkoutService";
 
-/** The $97 Builder upgrade boundary. Checkout is hosted on Whop; access is
- *  granted server-side once payment is confirmed (never by the browser). */
+/** The $97 Builder upgrade boundary. Checkout is hosted on Whop (started
+ *  server-side via whop-checkout, tied to this account); access is granted
+ *  server-side once payment is confirmed (never by the browser). */
 export function Paywall({ context }: { context?: "blueprint" | "direct" }) {
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [email, setEmail] = useState<string | null>(null);
+  const [starting, setStarting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -20,6 +23,18 @@ export function Paywall({ context }: { context?: "blueprint" | "direct" }) {
     }).catch(() => active && setAuthed(false));
     return () => { active = false; };
   }, []);
+
+  async function handleCheckout() {
+    setStarting(true);
+    setError(null);
+    try {
+      const url = await checkoutService.startCheckout("builder");
+      window.location.href = url;
+    } catch (e) {
+      setError(e instanceof CheckoutError ? e.message : "Couldn't start checkout. Please try again.");
+      setStarting(false);
+    }
+  }
 
   return (
     <Card style={{ maxWidth: 640 }}>
@@ -49,11 +64,12 @@ export function Paywall({ context }: { context?: "blueprint" | "direct" }) {
         </div>
       ) : (
         <div style={{ marginTop: "var(--space-4)" }}>
-          <a className="btn btn-primary" href={env.whopBuilderUrl} target="_blank" rel="noopener noreferrer">
-            Get the Builder — $97
-          </a>
+          <button className="btn btn-primary" onClick={handleCheckout} disabled={starting}>
+            {starting ? "Starting checkout…" : "Get the Builder — $97"}
+          </button>
+          {error && <p className="d-notice" style={{ marginTop: 10 }}>{error}</p>}
           <p className="dim" style={{ fontSize: "0.8rem", marginTop: 10 }}>
-            Secure checkout is handled by Whop. Please pay with{email ? <> the same email you signed up with (<strong>{email}</strong>)</> : " the same email you signed up with"} so we can unlock your access. It activates shortly after payment — refresh this page.
+            Secure checkout is handled by Whop, tied to your account ({email ?? "signed-in email"}). It activates shortly after payment — refresh this page.
           </p>
         </div>
       )}

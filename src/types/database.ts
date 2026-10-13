@@ -113,21 +113,25 @@ export interface EventRow {
   created_at: string;
 }
 
-export type PurchaseStatus = "pending" | "paid" | "failed" | "refunded";
-export type ProductKey = "builder" | "digital-marketing-os";
+export type PurchaseStatus = "pending" | "paid" | "failed" | "refunded" | "disputed";
+export type ProductKey = "builder" | "digital-marketing-os" | "adhd-system" | "budgeting-system" | "launch-system" | "content-toolkit";
 
 /** public.purchases — authoritative entitlement record (webhook-written). */
 export interface Purchase {
   id: string;
-  user_id: string;
+  /** Null until a plain (non-dynamic) Whop-link buyer signs up and claims it by email. */
+  user_id: string | null;
   product_key: ProductKey;
   status: PurchaseStatus;
   provider: string;
   amount: number | null;
   currency: string | null;
-  /** Whop's own identifiers for this payment (membership + receipt). */
+  /** Whop's own identifiers for this payment. */
+  whop_payment_id: string | null;
   whop_membership_id: string | null;
-  whop_receipt_id: string | null;
+  whop_checkout_config_id: string | null;
+  /** Set by the webhook for unclaimed (plain-link) purchases; used to auto-claim on sign-in. */
+  buyer_email: string | null;
   created_at: string;
   updated_at: string;
 }

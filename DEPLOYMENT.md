@@ -37,7 +37,7 @@ npm run test:db    # ephemeral Postgres: RLS, 3-product limit, entitlement, writ
 
 ## 2. Edge Functions
 ```bash
-supabase functions deploy discovery discovery-analyze blueprint-generate builder whop-webhook
+supabase functions deploy discovery discovery-analyze blueprint-generate builder whop-webhook whop-checkout product-access
 ```
 
 ## 3. AI provider (server-side)
@@ -47,35 +47,42 @@ supabase secrets set ANTHROPIC_API_KEY=sk-ant-...     # resolver order: anthropi
 ```
 
 ## 4. Whop
-Checkout is a hosted Whop link, not a server-created session — set it once per product:
-1. whop.com dashboard ▸ create the product/plan (Builder, $97 one-time) → copy its **hosted checkout link**
-   and its **plan ID**.
-2. Set `VITE_WHOP_BUILDER_URL` in Netlify env to that checkout link (see `.env.example`).
-3. Settings ▸ **Webhooks** ▸ add endpoint:
+Checkout is server-created (`whop-checkout`), not a hosted link — it ties the Whop
+checkout session to the signed-in user's id via metadata, so access can be granted
+to the right account even before the buyer confirms their email.
+
+1. Each sellable product needs a row in `catalog_products` with `status = 'live'`
+   and `whop_product_id` set to its Whop product id (`prod_...`). The Builder ships
+   seeded; add a Marketplace product the same way once it has real content
+   (`catalog_modules` / `catalog_lessons`).
+2. Whop dashboard ▸ Settings ▸ **Webhooks** ▸ add endpoint:
    - URL: `https://<PROJECT_REF>.supabase.co/functions/v1/whop-webhook`
-   - Events: `payment.succeeded` (and/or `membership.went_valid` — confirm current event names in the
-     Whop dashboard before relying on either, they're **VERIFY BEFORE PUBLISHING**)
-   - Copy the webhook's **signing secret**.
+   - Events: `payment.succeeded` and `dispute.created`
+   - Copy the webhook's **signing secret** (Standard Webhooks spec — `webhook-id`/
+     `webhook-timestamp`/`webhook-signature` headers).
 ```bash
+supabase secrets set WHOP_API_KEY=...            # Whop API key (server-only)
 supabase secrets set WHOP_WEBHOOK_SECRET=...
-supabase secrets set WHOP_BUILDER_PLAN_ID=...
 supabase secrets set APP_URL=https://<your-netlify-site>
 ```
-Webhook is authoritative: it matches the buyer's checkout email to a Supabase auth user and only then
-flips `purchases.status='paid'` (idempotent upsert on `user_id,product_key`). The browser never grants
-access. **The buyer must check out with the same email they sign in to the app with** — the Paywall
-copy says this; if a customer pays with a different email, reconcile manually (look up the Whop
-receipt, update the `purchases` row for their actual account).
+The webhook is authoritative and resolves the product from the *paid Whop product
+id* via `catalog_products` (never trusts the browser). It supports two paths:
+- **In-app checkout** (`whop-checkout`, preferred): metadata carries `user_id` +
+  `purchase_id` — the pending row made at checkout is flipped straight to `paid`.
+- **A plain Whop checkout link** pasted anywhere: matched by buyer email. If no
+  signed-up account matches yet, an unclaimed row is stored (`buyer_email` set,
+  `user_id` null) and auto-claimed the next time that confirmed email signs in
+  (see `_shared/entitlements.ts`).
 
 ## 5. Client (Netlify)
 Set env vars (Site settings ▸ Environment): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
-(Dashboard ▸ Project Settings ▸ API), `VITE_APP_URL` (your site URL), `VITE_WHOP_BUILDER_URL`,
-`VITE_WHOP_DMOS_URL` (once that product exists). Build `npm run build`, publish `dist`.
+(Dashboard ▸ Project Settings ▸ API), `VITE_APP_URL` (your site URL). No Whop env
+var is needed client-side — checkout is started server-side.
 
 ## 6. First production test
 1. Visit `/discover` → complete the flow → `/discover/results` shows real opportunities.
 2. "Choose this" → `/blueprint` renders a schema-valid blueprint (real AI).
-3. `/builder` shows the paywall → pay through the Whop link with the same email as your test account.
+3. `/builder` shows the paywall → "Get the Builder" starts a Whop checkout tied to your account.
 4. Webhook fires → return to `/builder` → access granted → generate a phase → leave and return → state resumed.
 5. Direct path: `/get-started` → pay → `/builder` works with no Discovery.
 
