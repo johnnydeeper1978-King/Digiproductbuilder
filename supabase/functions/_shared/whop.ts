@@ -84,6 +84,49 @@ export async function createCheckout(opts: {
   return { id: res.id, url: new URL(res.purchase_url, "https://whop.com").toString() };
 }
 
+// ---- Affiliates (reseller links) ----
+
+export type AffiliateOverride = {
+  id: string;
+  override_type: "standard" | "rev_share";
+  commission_type: "percentage" | "flat_fee" | null;
+  commission_value: number;
+  plan_id: string | null;
+  product_direct_link: string | null;
+  checkout_direct_link: string | null;
+};
+
+/** Enrolls (or re-activates) a user as an affiliate on our account. Idempotent. */
+export async function enrollAffiliate(userIdentifier: string): Promise<{ id: string }> {
+  const res = await whopFetch("/affiliates", {
+    method: "POST",
+    body: JSON.stringify({ account_id: whopIds().companyId, user_identifier: userIdentifier }),
+  }) as { id: string };
+  return { id: res.id };
+}
+
+export async function listStandardOverrides(affiliateId: string): Promise<AffiliateOverride[]> {
+  const res = await whopFetch(`/affiliates/${affiliateId}/overrides?override_type=standard&first=50`) as { data?: AffiliateOverride[] };
+  return res.data ?? [];
+}
+
+/** A per-plan reseller rate for this affiliate, overriding the account's default rate. */
+export async function createStandardOverride(opts: {
+  affiliateId: string; planId: string; commissionPercent: number;
+}): Promise<AffiliateOverride> {
+  return await whopFetch(`/affiliates/${opts.affiliateId}/overrides`, {
+    method: "POST",
+    body: JSON.stringify({
+      override_type: "standard",
+      id: opts.affiliateId,
+      plan_id: opts.planId,
+      commission_type: "percentage",
+      commission_value: opts.commissionPercent,
+      applies_to_payments: "all_payments",
+    }),
+  }) as AffiliateOverride;
+}
+
 // ---- Webhook signature (Standard Webhooks) ----
 
 const enc = new TextEncoder();

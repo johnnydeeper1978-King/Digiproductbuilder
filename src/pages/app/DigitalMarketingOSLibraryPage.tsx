@@ -4,8 +4,68 @@ import { Card } from "@/components/ui/Card";
 import { ButtonLink } from "@/components/ui/Button";
 import { LoadingState } from "@/components/feedback/LoadingState";
 import { entitlementsService } from "@/services/entitlementsService";
+import { resellerService, ResellerError } from "@/services/resellerService";
 import { DMOS_MODULES } from "@/data/digitalMarketingOS";
 import { cn } from "@/utils/cn";
+
+/** Self-serve reseller link: owners generate their own Whop affiliate link for
+ *  this product without leaving the dashboard. Whop does the actual tracking,
+ *  attribution and payout — this just calls whop-affiliate to set it up. */
+function ResellerCard() {
+  const [state, setState] = useState<{ link: string; commissionPercent: number } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  async function generate() {
+    setLoading(true);
+    setError(null);
+    try {
+      setState(await resellerService.getOrCreateLink("digital-marketing-os"));
+    } catch (e) {
+      setError(e instanceof ResellerError ? e.message : "Couldn't generate your link. Try again shortly.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function copy() {
+    if (!state) return;
+    await navigator.clipboard.writeText(state.link).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <Card style={{ marginBottom: "var(--space-4)" }}>
+      <span className="eyebrow">Resell this</span>
+      <h3 style={{ margin: "4px 0 0" }}>Become a reseller</h3>
+      <p className="muted" style={{ marginTop: 6 }}>
+        Share your own link and earn commission on every sale — tracked and paid out by Whop.
+      </p>
+      {state ? (
+        <div style={{ marginTop: "var(--space-3)" }}>
+          <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+            <code style={{ wordBreak: "break-all", fontSize: "0.85rem" }}>{state.link}</code>
+          </div>
+          <button className="btn btn-primary" style={{ marginTop: 10 }} onClick={copy}>
+            {copied ? "Copied!" : "Copy link"}
+          </button>
+          <p className="dim" style={{ fontSize: "0.8rem", marginTop: 10 }}>
+            You earn {state.commissionPercent}% per sale through this link, paid out by Whop ~30 days after each sale.
+          </p>
+        </div>
+      ) : (
+        <div style={{ marginTop: "var(--space-3)" }}>
+          <button className="btn btn-primary" onClick={generate} disabled={loading}>
+            {loading ? "Generating…" : "Generate my reseller link"}
+          </button>
+          {error && <p className="d-notice" style={{ marginTop: 10 }}>{error}</p>}
+        </div>
+      )}
+    </Card>
+  );
+}
 
 /** Gated module viewer — /library/digital-marketing-os. Mirrors the Builder's
  *  access pattern: a paid purchases row (written only by the Whop webhook)
@@ -56,6 +116,7 @@ export function DigitalMarketingOSLibraryPage() {
           ))}
         </nav>
         <div>
+          <ResellerCard />
           <Card>
             <span className="eyebrow">Module {mod.number}</span>
             <h2 style={{ margin: "4px 0 0" }}>{mod.title}</h2>
