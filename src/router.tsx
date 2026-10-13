@@ -9,6 +9,7 @@ import { DiscoverResultsPage } from "@/pages/public/DiscoverResultsPage";
 import { BlueprintPage } from "@/pages/public/BlueprintPage";
 import { BuilderPage } from "@/pages/public/BuilderPage";
 import { MarketplacePage } from "@/pages/public/MarketplacePage";
+import { DigitalMarketingOSPage } from "@/pages/public/DigitalMarketingOSPage";
 import { WorkforcePage } from "@/pages/public/WorkforcePage";
 import { BookACallPage } from "@/pages/public/BookACallPage";
 import { LoginPage } from "@/pages/public/LoginPage";
@@ -22,6 +23,7 @@ import { AiGuidePage } from "@/pages/app/AiGuidePage";
 import { ContentPage } from "@/pages/app/ContentPage";
 import { ToolsPage } from "@/pages/app/ToolsPage";
 import { AffiliatePage } from "@/pages/app/AffiliatePage";
+import { DigitalMarketingOSLibraryPage } from "@/pages/app/DigitalMarketingOSLibraryPage";
 import { SettingsPage } from "@/pages/app/SettingsPage";
 
 import { NotFoundPage } from "@/pages/NotFoundPage";
@@ -38,6 +40,7 @@ export function AppRouter() {
         <Route path="/blueprint" element={<BlueprintPage />} />
         <Route path="/builder" element={<BuilderPage />} />
         <Route path="/marketplace" element={<MarketplacePage />} />
+        <Route path="/marketplace/digital-marketing-os" element={<DigitalMarketingOSPage />} />
         <Route path="/workforce" element={<WorkforcePage />} />
         <Route path="/book-a-call" element={<BookACallPage />} />
         <Route path="/login" element={<LoginPage />} />
@@ -54,6 +57,7 @@ export function AppRouter() {
         <Route path="/content" element={<ContentPage />} />
         <Route path="/tools" element={<ToolsPage />} />
         <Route path="/affiliate" element={<AffiliatePage />} />
+        <Route path="/library/digital-marketing-os" element={<DigitalMarketingOSLibraryPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
 

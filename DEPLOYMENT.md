@@ -1,6 +1,6 @@
 # 369 Degrees — Production Deployment
 
-This wires the existing **Discovery → Blueprint → $47 access → Builder** journey to
+This wires the existing **Discovery → Blueprint → $97 access → Builder** journey to
 live services. No app features change here. Nothing fake: every function returns an
 honest error until its config exists.
 
@@ -37,7 +37,7 @@ npm run test:db    # ephemeral Postgres: RLS, 3-product limit, entitlement, writ
 
 ## 2. Edge Functions
 ```bash
-supabase functions deploy discovery discovery-analyze blueprint-generate builder stripe-checkout stripe-webhook
+supabase functions deploy discovery discovery-analyze blueprint-generate builder whop-webhook
 ```
 
 ## 3. AI provider (server-side)
@@ -46,31 +46,36 @@ Get a key at console.anthropic.com ▸ API Keys (or OpenAI/Perplexity), then:
 supabase secrets set ANTHROPIC_API_KEY=sk-ant-...     # resolver order: anthropic > openai > perplexity
 ```
 
-## 4. Stripe
-1. dashboard.stripe.com ▸ **Products** ▸ create "369 Digital Product Builder", one-time **$47** → copy the **Price ID** (`price_...`).
-2. Developers ▸ **API keys** → copy the **Secret key** (`sk_...`).
-3. Developers ▸ **Webhooks** ▸ Add endpoint:
-   - URL: `https://<PROJECT_REF>.supabase.co/functions/v1/stripe-webhook`
-   - Event: `checkout.session.completed`
-   - Copy the **Signing secret** (`whsec_...`).
+## 4. Whop
+Checkout is a hosted Whop link, not a server-created session — set it once per product:
+1. whop.com dashboard ▸ create the product/plan (Builder, $97 one-time) → copy its **hosted checkout link**
+   and its **plan ID**.
+2. Set `VITE_WHOP_BUILDER_URL` in Netlify env to that checkout link (see `.env.example`).
+3. Settings ▸ **Webhooks** ▸ add endpoint:
+   - URL: `https://<PROJECT_REF>.supabase.co/functions/v1/whop-webhook`
+   - Events: `payment.succeeded` (and/or `membership.went_valid` — confirm current event names in the
+     Whop dashboard before relying on either, they're **VERIFY BEFORE PUBLISHING**)
+   - Copy the webhook's **signing secret**.
 ```bash
-supabase secrets set STRIPE_SECRET_KEY=sk_...
-supabase secrets set STRIPE_BUILDER_PRICE_ID=price_...
-supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_...
+supabase secrets set WHOP_WEBHOOK_SECRET=...
+supabase secrets set WHOP_BUILDER_PLAN_ID=...
 supabase secrets set APP_URL=https://<your-netlify-site>
 ```
-Webhook is authoritative: only `checkout.session.completed` flips `purchases.status='paid'`
-(idempotent via `.neq('status','paid')` + a unique paid index). The browser never grants access.
+Webhook is authoritative: it matches the buyer's checkout email to a Supabase auth user and only then
+flips `purchases.status='paid'` (idempotent upsert on `user_id,product_key`). The browser never grants
+access. **The buyer must check out with the same email they sign in to the app with** — the Paywall
+copy says this; if a customer pays with a different email, reconcile manually (look up the Whop
+receipt, update the `purchases` row for their actual account).
 
 ## 5. Client (Netlify)
 Set env vars (Site settings ▸ Environment): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
-(Dashboard ▸ Project Settings ▸ API), `VITE_APP_URL` (your site URL). Build `npm run build`,
-publish `dist`.
+(Dashboard ▸ Project Settings ▸ API), `VITE_APP_URL` (your site URL), `VITE_WHOP_BUILDER_URL`,
+`VITE_WHOP_DMOS_URL` (once that product exists). Build `npm run build`, publish `dist`.
 
 ## 6. First production test
 1. Visit `/discover` → complete the flow → `/discover/results` shows real opportunities.
 2. "Choose this" → `/blueprint` renders a schema-valid blueprint (real AI).
-3. `/builder` shows the paywall → pay with a Stripe **test card** `4242 4242 4242 4242`.
+3. `/builder` shows the paywall → pay through the Whop link with the same email as your test account.
 4. Webhook fires → return to `/builder` → access granted → generate a phase → leave and return → state resumed.
 5. Direct path: `/get-started` → pay → `/builder` works with no Discovery.
 
@@ -80,9 +85,9 @@ publish `dist`.
 | No AI key | `501 ai_not_configured` |
 | AI request fails | `502 ai_unavailable`, `ai_runs` row `failed` |
 | Invalid AI output | `422 *_invalid`, `ai_runs` `invalid` |
-| Stripe not configured | `501 payments_not_configured` |
-| Cancelled checkout | back to `/builder?checkout=cancelled`, no access |
-| Duplicate webhook | idempotent, no double grant |
+| Whop webhook not configured | `501 not_configured` |
+| Buyer email doesn't match an account | webhook returns `unmatched: true`, logged to `events`, no access granted — reconcile manually |
+| Duplicate webhook delivery | idempotent upsert, no double grant |
 | Unauthorized product | `403 forbidden` / RLS returns nothing |
 | Client writes builder_state | DB `permission denied` (server-only columns) |
 

@@ -12,6 +12,7 @@ const build = [
 ];
 const grow = [
   { to: "/marketplace", label: "Marketplace" },
+  { to: "/library/digital-marketing-os", label: "Digital Marketing OS" },
   { to: "/workforce", label: "AI Workforce" },
   { to: "/affiliate", label: "Affiliate Program" },
   { to: "/book-a-call", label: "Book a Call" },

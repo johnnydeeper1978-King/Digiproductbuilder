@@ -2,7 +2,7 @@
 
 Discover a digital product opportunity, turn it into a blueprint, and build and
 sell it. This repository is the **application foundation** — a clean, typed,
-production-oriented base for the Discovery → Blueprint → $47 Builder journey.
+production-oriented base for the Discovery → Blueprint → $97 Builder journey.
 
 > Foundation scope only. Discovery AI, live payments, Marketplace and AI
 > Workforce are **boundaried placeholders**, not fake implementations.
@@ -37,7 +37,7 @@ Client-safe (compiled into the browser bundle — public only):
 
 Server-only (NEVER `VITE_`-prefixed, never imported in `src/`; live in Supabase
 Edge Functions): `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`,
-`ANTHROPIC_API_KEY`, `PERPLEXITY_API_KEY`, `STRIPE_SECRET_KEY`.
+`ANTHROPIC_API_KEY`, `PERPLEXITY_API_KEY`, `WHOP_WEBHOOK_SECRET`.
 
 ## Project structure
 

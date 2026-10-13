@@ -112,7 +112,7 @@ export function BlueprintPage() {
 
             <Card style={{ marginTop: "var(--space-8)" }}>
               <span className="eyebrow">Next step</span>
-              <h3 style={{ marginTop: 6 }}>Build it in the $47 Builder</h3>
+              <h3 style={{ marginTop: 6 }}>Build it in the $97 Builder</h3>
               <p className="muted">{bp.nextStep ?? "The Builder takes this blueprint as its starting point and guides you through creating and launching the product — you won't repeat Discovery."}</p>
               <ButtonLink to="/builder">Continue to the Builder →</ButtonLink>
             </Card>

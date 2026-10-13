@@ -114,7 +114,7 @@ export interface EventRow {
 }
 
 export type PurchaseStatus = "pending" | "paid" | "failed" | "refunded";
-export type ProductKey = "builder";
+export type ProductKey = "builder" | "digital-marketing-os";
 
 /** public.purchases — authoritative entitlement record (webhook-written). */
 export interface Purchase {
@@ -125,8 +125,9 @@ export interface Purchase {
   provider: string;
   amount: number | null;
   currency: string | null;
-  stripe_checkout_session_id: string | null;
-  stripe_payment_intent_id: string | null;
+  /** Whop's own identifiers for this payment (membership + receipt). */
+  whop_membership_id: string | null;
+  whop_receipt_id: string | null;
   created_at: string;
   updated_at: string;
 }

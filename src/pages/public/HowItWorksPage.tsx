@@ -6,7 +6,7 @@ import { ButtonLink } from "@/components/ui/Button";
 const steps = [
   { t: "Free Discovery", d: "A guided flow learns your skills, interests, time and goals, then generates product opportunities scored for fit — including unexpected ones." },
   { t: "Your Blueprint", d: "Pick an opportunity and get a Digital Product Blueprint: buyer, problem, positioning, content outline, pricing hypothesis and a launch direction." },
-  { t: "The $47 Builder", d: "The Builder uses your blueprint as its starting point and guides you through creating, positioning, pricing and launching the product." },
+  { t: "The $97 Builder", d: "The Builder uses your blueprint as its starting point and guides you through creating, positioning, pricing and launching the product." },
   { t: "Launch & sell", d: "Landing page, payment setup, content and a launch sequence — always with a clear next action." },
   { t: "Automate", d: "As you grow, an AI workforce can take on research, content, marketing and support." },
 ];
@@ -14,7 +14,7 @@ const steps = [
 export function HowItWorksPage() {
   return (
     <Container>
-      <Seo title="How it works" description="From free Discovery to a blueprint to a guided $47 build — here's the full 369 Degrees journey." />
+      <Seo title="How it works" description="From free Discovery to a blueprint to a guided $97 build — here's the full 369 Degrees journey." />
       <div className="page-head" style={{ paddingTop: "var(--space-12)" }}>
         <span className="eyebrow">How it works</span>
         <h1>From "no idea" to a product you can sell</h1>

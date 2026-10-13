@@ -4,13 +4,13 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Paywall } from "@/features/builder/Paywall";
 
 /**
- * Direct Builder path: Get Started -> $47 Builder purchase -> onboarding.
+ * Direct Builder path: Get Started -> $97 Builder purchase -> onboarding.
  * Discovery stays optional and is NOT duplicated here.
  */
 export function GetStartedPage() {
   return (
     <Container>
-      <Seo title="Get started" description="Start building your digital product with the $47 Builder, or try free Discovery first." />
+      <Seo title="Get started" description="Start building your digital product with the $97 Builder, or try free Discovery first." />
       <div style={{ maxWidth: 760, margin: "var(--space-12) auto var(--space-24)" }}>
         <span className="eyebrow">Get started</span>
         <h1>Already know what you want to build?</h1>

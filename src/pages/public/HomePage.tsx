@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 const journey = [
   { n: "1", t: "Discover", d: "Answer a guided flow. We surface product opportunities that fit you." },
   { n: "2", t: "Blueprint", d: "Turn the best opportunity into a concrete digital product blueprint." },
-  { n: "3", t: "Build", d: "The $47 Builder guides you from blueprint to a product you can sell." },
+  { n: "3", t: "Build", d: "The $97 Builder guides you from blueprint to a product you can sell." },
   { n: "4", t: "Launch & sell", d: "Positioning, landing page, payments, content and a launch plan." },
   { n: "5", t: "Automate", d: "Grow into an AI workforce that runs the busywork for you." },
 ];
@@ -44,7 +44,7 @@ export function HomePage() {
               </div>
               <div className="pill-row">
                 <Badge tone="accent">Free Discovery</Badge>
-                <Badge>$47 Builder</Badge>
+                <Badge>$97 Builder</Badge>
                 <Badge tone="soon">AI Workforce · soon</Badge>
               </div>
             </div>
